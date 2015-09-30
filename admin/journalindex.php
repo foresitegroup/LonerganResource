@@ -15,6 +15,7 @@ include "../inc/dbconfig.php";
   <title>Lonergan Resource Administration | Journals</title>
   <link rel="shortcut icon" href="../images/favicon.ico">
   <link rel="stylesheet" href="../inc/lr2009.css" type="text/css" media="screen,print">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
   <style type="text/css">
     #contact LABEL {
       width: 50px;
@@ -48,6 +49,9 @@ include "../inc/dbconfig.php";
       
       <form action="journaldb.php?a=add" method="POST">
         <div id="contact">
+          <!-- Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"><br>
+          <br> -->
+
           <label>Title</label>
           <select name="titleid" style="width: 345px;">
             <option value="">Select...</option>
@@ -94,9 +98,10 @@ include "../inc/dbconfig.php";
       while($row = mysql_fetch_array($result)) {
         echo "
         <div style=\"margin-left: 90px;\">
-          <div style=\"float: left; width: 90px; margin-left: -90px;\">
-            <a href=\"journaledit.php?id=" . $row['id'] . "\">edit</a> | 
-            <a href=\"journaldb.php?a=delete&id=" . $row['id'] . "\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\">delete</a>
+          <div style=\"float: left; width: 90px; margin-left: -90px; font-size: 120%;\">
+            <a href=\"journaledit.php?id=" . $row['id'] . "\" title=\"Edit\"><i class=\"fa fa-pencil\"></i></a> &nbsp; 
+            <a href=\"journaldb.php?a=delete&id=" . $row['id'] . "\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\" title=\"Delete\"><i class=\"fa fa-trash-o\"></i></a> &nbsp;
+            <a href=\"../journals.php?" . $row['id'] . "\" target=\"new\" title=\"View\"><i class=\"fa fa-eye\"></i></a>
           </div>";
           
           echo "<em>" . $row['title'] . "</em>";
@@ -107,7 +112,9 @@ include "../inc/dbconfig.php";
             if ($row['volume'] != "" && $row['number'] != "") echo ",";
             if ($row['number'] != "") echo " No. " . $row['number'];
           }
-        echo "</div>\n";
+
+          if (!empty($row['display'])) echo "<br><em>[Not displayed publically]</em>";
+        echo "</div><br>\n";
       }
       ?>
     </div>

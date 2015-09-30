@@ -8,7 +8,12 @@ include "header.php";
 <h1><?php echo $PageTitle; ?></h1>
 
 <?php
-if ($_SERVER['QUERY_STRING']) { $id = "WHERE id = '" . $_SERVER['QUERY_STRING'] . "'"; }
+if ($_SERVER['QUERY_STRING']) {
+  $id = "WHERE id = '" . $_SERVER['QUERY_STRING'] . "'";
+} else {
+  $id = "WHERE display = ''";
+}
+
 $result = mysql_query("SELECT * FROM lectures $id ORDER BY name+0 ASC");
 while($row = mysql_fetch_array($result)) {
 ?>

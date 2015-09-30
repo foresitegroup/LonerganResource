@@ -15,6 +15,7 @@ include "../inc/dbconfig.php";
   <title>Lonergan Resource Administration | Conferences</title>
   <link rel="shortcut icon" href="../images/favicon.ico">
   <link rel="stylesheet" href="../inc/lr2009.css" type="text/css" media="screen,print">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
   <style type="text/css">
     #contact LABEL {
       width: 70px;
@@ -44,6 +45,8 @@ include "../inc/dbconfig.php";
       
       <form action="condb.php?a=add" method="POST">
         <div id="contact">
+          Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"><br>
+          <br>
           <label>Start Date</label> <input type="text" name="startdate" size="8" class="dateformat-m-sl-d-sl-Y fill-grid" id="dateformat-s" style="width: 80px;"><br>
           <br>
           <label>End Date</label> <input type="text" name="enddate" size="8" class="dateformat-m-sl-d-sl-Y fill-grid" id="dateformat-e" style="width: 80px;"><br>
@@ -76,11 +79,17 @@ include "../inc/dbconfig.php";
         
         echo "
         <div style=\"margin-left: 90px;\">
-          <div style=\"float: left; width: 90px; margin-left: -90px;\">
-            <a href=\"conedit.php?id=" . $row['id'] . "\">edit</a> | 
-            <a href=\"condb.php?a=delete&id=" . $row['id'] . "\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\">delete</a>
+          <div style=\"float: left; width: 90px; margin-left: -90px; font-size: 120%;\">
+            <a href=\"conedit.php?id=" . $row['id'] . "\" title=\"Edit\"><i class=\"fa fa-pencil\"></i></a> &nbsp; 
+            <a href=\"condb.php?a=delete&id=" . $row['id'] . "\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\" title=\"Delete\"><i class=\"fa fa-trash-o\"></i></a> &nbsp;
+            <a href=\"../conference.php?" . $row['id'] . "\" target=\"new\" title=\"View\"><i class=\"fa fa-eye\"></i></a>
           </div>
           <strong>" . $datestr . "</strong> " . $row['title'] . "
+          ";
+
+          if (!empty($row['display'])) echo "<br><em>[Not displayed publically]</em>";
+
+          echo "
         </div><br>
         ";
       }

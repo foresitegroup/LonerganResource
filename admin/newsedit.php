@@ -49,6 +49,9 @@ include "../inc/dbconfig.php";
     
     <form action="newsdb.php?a=edit" method="POST">
       <div id="contact">
+        Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"<?php if($row['display'] != "") echo " checked"; ?>><br>
+        <br>
+        
         <label>Title</label> <input type="text" name="title" value="<?php echo $row['title']; ?>"><br>
         <br>
         <label>Description</label><br>

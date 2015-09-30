@@ -4,10 +4,10 @@ require_once("../inc/getid3/getid3/getid3.php");
 
 switch ($_GET['a']) {
   case "add":
-    $query = "INSERT INTO lectures (date, name, title, location, description, file1, file2, file3, file4, file5) VALUES ('" . $_POST['date'] . "', '" . $_POST['name'] . "', '" . $_POST['title'] . "', '" . $_POST['location'] . "', '" . htmlspecialchars($_POST['description'], ENT_QUOTES) . "', '" . $_POST['file1'] . "', '" . $_POST['file2'] . "', '" . $_POST['file3'] . "', '" . $_POST['file4'] . "', '" . $_POST['file5'] . "')";
+    $query = "INSERT INTO lectures (date, name, title, location, description, file1, file2, file3, file4, file5, display) VALUES ('" . $_POST['date'] . "', '" . $_POST['name'] . "', '" . $_POST['title'] . "', '" . $_POST['location'] . "', '" . htmlspecialchars($_POST['description'], ENT_QUOTES) . "', '" . $_POST['file1'] . "', '" . $_POST['file2'] . "', '" . $_POST['file3'] . "', '" . $_POST['file4'] . "', '" . $_POST['file5'] . "', '" . $_POST['display'] . "')";
     break;
   case "edit":
-    $query = "UPDATE lectures SET date = '" . $_POST['date'] . "', name = '" . $_POST['name'] . "', title = '" . $_POST['title'] . "', location = '" . $_POST['location'] . "', description = '" . htmlspecialchars($_POST['description'], ENT_QUOTES) . "', file1 = '" . $_POST['file1'] . "', file2 = '" . $_POST['file2'] . "', file3 = '" . $_POST['file3'] . "', file4 = '" . $_POST['file4'] . "', file5 = '" . $_POST['file5'] . "' WHERE id = '" . $_POST['id'] . "'";
+    $query = "UPDATE lectures SET date = '" . $_POST['date'] . "', name = '" . $_POST['name'] . "', title = '" . $_POST['title'] . "', location = '" . $_POST['location'] . "', description = '" . htmlspecialchars($_POST['description'], ENT_QUOTES) . "', file1 = '" . $_POST['file1'] . "', file2 = '" . $_POST['file2'] . "', file3 = '" . $_POST['file3'] . "', file4 = '" . $_POST['file4'] . "', file5 = '" . $_POST['file5'] . "', display = '" . $_POST['display'] . "' WHERE id = '" . $_POST['id'] . "'";
     break;
   case "delete":
     $query = "DELETE FROM lectures WHERE id = '" . $_GET['id'] . "'";

@@ -48,6 +48,8 @@ include "../inc/dbconfig.php";
     
     <form action="condb.php?a=edit<?php if (!empty($_GET['b'])) { echo "&b=" . $_GET['b']; } ?>" method="POST">
       <div id="contact">
+        Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"<?php if($row['display'] != "") echo " checked"; ?>><br>
+        <br>
         <label>Start Date</label> <input type="text" name="startdate" size="8" class="dateformat-m-sl-d-sl-Y fill-grid" id="dateformat-s" style="width: 80px;" value="<?php echo date("m/d/Y",$row['startdate']); ?>"><br>
         <br>
         <label>End Date</label> <input type="text" name="enddate" size="8" class="dateformat-m-sl-d-sl-Y fill-grid" id="dateformat-e" style="width: 80px;" value="<?php echo date("m/d/Y",$row['enddate']); ?>"><br>

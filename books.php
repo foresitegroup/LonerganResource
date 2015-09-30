@@ -9,7 +9,7 @@ include "header.php";
 
 <ul style="margin: 0 0 0 0.5em; padding: 0 0 0 0.5em;">
 <?php
-$result = mysql_query("SELECT * FROM books ORDER BY name,date,title");
+$result = mysql_query("SELECT * FROM books WHERE display = '' ORDER BY name,date,title");
 while($row = mysql_fetch_array($result)) {
   echo "<li style=\"padding-bottom: 5px;\"><a href=\"book.php?" . $row['id'] . "\">" . $row['name'] . ", " . $row['date'] . ", <em>" . $row['title'] . "</em></a></li>\n";
 }

@@ -49,6 +49,9 @@ include "../inc/dbconfig.php";
     
     <form action="lecturedb.php?a=edit" method="POST">
       <div id="contact">
+        Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"<?php if($row['display'] != "") echo " checked"; ?>><br>
+        <br>
+        
         <label>Date</label> <input type="text" name="date" value="<?php echo $row['date']; ?>"><br>
         <br>
         <label>Presenter</label> <input type="text" name="name" value="<?php echo $row['name']; ?>"><br>

@@ -6,7 +6,8 @@ include "header.php";
 <h1><?php echo $PageTitle; ?></h1>
 
 <?php
-$result = mysql_query("SELECT * FROM news ORDER BY id DESC");
+$query = ($_SERVER['QUERY_STRING']) ? "SELECT * FROM news WHERE id = '" . $_SERVER['QUERY_STRING'] . "'" : "SELECT * FROM news WHERE display = '' ORDER BY id DESC";
+$result = mysql_query($query);
 while($row = mysql_fetch_array($result)) {
   echo "<a name=\"" . $row['id'] . "\"></a>\n";
   

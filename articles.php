@@ -7,8 +7,8 @@ include "header.php";
 <h1><?php echo $PageTitle; ?></h1>
 
 <?php
-if ($_SERVER['QUERY_STRING']) { $id = "WHERE id = '" . $_SERVER['QUERY_STRING'] . "'"; }
-$result = mysql_query("SELECT * FROM articles $id ORDER BY name ASC");
+$query = ($_SERVER['QUERY_STRING']) ? "SELECT * FROM articles WHERE id = '" . $_SERVER['QUERY_STRING'] . "'" : "SELECT * FROM articles WHERE display = '' ORDER BY name ASC";
+$result = mysql_query($query);
 while($row = mysql_fetch_array($result)) {
 ?>
 

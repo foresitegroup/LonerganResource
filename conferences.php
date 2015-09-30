@@ -8,7 +8,7 @@ include "header.php";
 <h1><?php echo $PageTitle ?></h1>
 
 <?php
-$result = mysql_query("SELECT * FROM conference ORDER BY startdate + 0");
+$result = mysql_query("SELECT * FROM conference WHERE display = '' ORDER BY startdate + 0");
 while($row = mysql_fetch_array($result)) {
   $datestr = date("M d", $row['startdate']);
   if (($row['enddate'] == "") || ($row['enddate'] == $row['startdate'])) {

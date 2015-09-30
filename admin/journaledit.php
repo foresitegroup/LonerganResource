@@ -49,6 +49,9 @@ include "../inc/dbconfig.php";
     
     <form action="journaldb.php?a=edit" method="POST">
       <div id="contact">
+        <!-- Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"<?php //if($row['display'] != "") echo " checked"; ?>><br>
+        <br> -->
+        
         <label>Title</label>
         <select name="titleid" style="width: 345px;">
           <option value="">Select...</option>

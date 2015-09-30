@@ -48,6 +48,8 @@ include "../inc/dbconfig.php";
 
     <form action="contribdb.php?a=edit" method="POST">
       <div id="contact">
+        Do not display publically <input type="checkbox" name="display" value="no" style="vertical-align: middle; width: auto;"<?php if($row['display'] != "") echo " checked"; ?>><br>
+        <br>
         <label style="width: 85px;">Conference</label>
           <select name="conference" style="width: 315px;">
             <option value="">Select...</option>

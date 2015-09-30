@@ -21,7 +21,7 @@ include "header.php";
 <?php
 echo str_replace("\n", "<br>", $row['description']);
 
-$result = mysql_query("SELECT * FROM contributors WHERE conference = '" . $_SERVER['QUERY_STRING'] . "' ORDER BY datetime ASC");
+$result = mysql_query("SELECT * FROM contributors WHERE display = '' AND conference = '" . $_SERVER['QUERY_STRING'] . "' ORDER BY datetime ASC");
 if (mysql_num_rows($result) > 0) {
   echo "<br><br>Available contributions from this conference:\n<ol>\n";
 
