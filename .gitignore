@@ -47,3 +47,7 @@ admin/login.php
 audio/
 backup/
 pdf/
+
+admin/export-test.php
+admin/inc/PHPExcel.php
+admin/inc/PHPExcel

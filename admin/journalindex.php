@@ -41,7 +41,10 @@ include "../inc/dbconfig.php";
   <div id="content-top" style="margin-top: 75px;"></div>
   <div id="content-sides">
     
-    <div style="text-align: center;"><a href="journaltitleindex.php">Add / Edit Journal Titles</a></div>
+    <div style="text-align: center;">
+      <a href="journaltitleindex.php">Add / Edit Journal Titles</a> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 
+      <a href="journalexport.php">Export Journals</a>
+    </div>
     <br>
     
     <div style="float: left; width: 50%;">

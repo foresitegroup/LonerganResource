@@ -40,6 +40,9 @@ include "../inc/dbconfig.php";
   
   <div id="content-top" style="margin-top: 75px;"></div>
   <div id="content-sides">
+
+    <a href="dissexport.php" style="float: right;">Export Dissertations</a>
+    <div style="clear: both;"></div><br>
     
     <div style="float: left; width: 50%;">
       <h1>Add Dissertation</h1>
