@@ -99,6 +99,10 @@ include "../inc/dbconfig.php";
           <label>Abstract</label><br>
           <textarea name="abstract" rows="6" cols="35" style="width: 400px; height: 600px;"></textarea><br>
           <br>
+
+          <input type="checkbox" name="adobe" value="yes" style="vertical-align: middle; width: auto;"> Adobe Reader required<br>
+          <br>
+
           <label>File 1</label> <input type="text" name="file1" style="width: 355px;"><br>
           <br>
           <label>File 2</label> <input type="text" name="file2" style="width: 355px;"><br>

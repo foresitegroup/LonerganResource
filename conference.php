@@ -67,6 +67,8 @@ if (mysql_num_rows($result) > 0) {
 
         echo "<div style=\"padding-top: 5px;\">\n";
           echo $mp3;
+          
+          if ($row['adobe'] == "yes") echo '<br><a href="https://get.adobe.com/reader/">Adobe Reader</a> is required to play embedded media files.';
 
           // Link to PDFs (if any)
           for ($i = 1; $i <= 6; $i++) {
