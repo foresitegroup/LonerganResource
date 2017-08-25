@@ -8,6 +8,11 @@ $PageTitle = $row['name'] . ", " . $row['date'] . ", " . $row['title'];
 include "header.php";
 ?>
 
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link type="text/css" href="inc/jplayer/jplayer.lonergan.css" rel="stylesheet">
+<script type="text/javascript" src="inc/jplayer/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="inc/jplayer/jplayer.playlist.min.js"></script>
+
 <h1><?php echo $row['name'] . ", " . $row['date'] . ", <em>" . $row['title'] . "</em><br>" . $row['location']; ?></h1>
 
 <?php
@@ -44,8 +49,10 @@ if (file_exists("pdf/courses/" . $_SERVER['QUERY_STRING'])) {
   }
 }
 
+echo "<br><br>";
+
 if (file_exists("audio/courses/" . $_SERVER['QUERY_STRING'])) {
-// Get all MP3s for this course
+  // Get all MP3s for this course
   $results = array();
   $handler = opendir("audio/courses/" . $_SERVER['QUERY_STRING']);
   
@@ -57,61 +64,66 @@ if (file_exists("audio/courses/" . $_SERVER['QUERY_STRING'])) {
   closedir($handler);
   
   sort($results);
-  
-  // Delete XML playlist...
-  if (file_exists("audio/courses/" .  $_SERVER['QUERY_STRING'] . "/playlist.xml")) {
-    unlink("audio/courses/" .  $_SERVER['QUERY_STRING'] . "/playlist.xml");
-  }
-  
-  // ...and create a new one
-  $xml = "<rss version=\"2.0\" xmlns:itunes=\"http://www.itunes.com/dtds/podcast-1.0.dtd\">\n<channel>\n<title>Playlist</title>\n";
-  
-  $playlistheight = 0;
+
+  $playlist = "";
+  $tracks = 0;
   $mp3 = "";
   
   foreach ($results as $value) {
-    // Count MP3s and adjust playlist height accordingly
-    $playlistheight = $playlistheight + 24;
-    
     // Get ID3 info if available
     $getID3 = new getID3;
     $ThisFileInfo = $getID3->analyze("audio/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value);
+    
     $title = (@$ThisFileInfo['tags']['id3v2']['title'][0] != "") ? @$ThisFileInfo['tags']['id3v2']['title'][0] : $value;
-    $duration = @$ThisFileInfo['playtime_string'];
     
-    // Add item
-    $xml .= "<item>\n<title>" . $title . "</title>\n<enclosure url=\"audio/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value . "\" type=\"audio/mpeg\" length=\"" . filesize("audio/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value) . "\" />\n<itunes:duration>" . $duration . "</itunes:duration>\n</item>\n";
-    
+    $length = gmdate("G:i:s", @$ThisFileInfo['playtime_seconds']);
+
+    $playlist .= "{ title: \"" . htmlspecialchars($title) . "\", mp3: \"audio/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value . "\", artist: \"" . $length . "\", free: true },\n";
+
+    $tracks++;
+
     // Create download links while we're at it.  We'll display them after the playlist
     $mp3 .= "<br><a href=\"audio/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value . "\"><img src=\"images/mp3.gif\" alt=\"MP3\"> Download <em>" . $title . "</em></a>\n";
   }
-  
-  $xml .= "</channel>\n</rss>";
-      
-  // Finally create the XML file
-  $fp = fopen("audio/courses/" .  $_SERVER['QUERY_STRING'] . "/playlist.xml", "w");
-  fwrite($fp, $xml);
-  fclose($fp);
-  
-  // If there's more than 10 mp3s, they can scroll the playlist
-  if ($playlistheight > 240) { $playlistheight = 240; }
-  
-  if (file_exists("audio/courses/" .  $_SERVER['QUERY_STRING'] . "/playlist.xml")) {
   ?>
-  <div id="audio<?php echo $row['id']; ?>" style="padding-top: 10px;">You don't have Flash installed or your version is too old.  Please <a href="http://get.adobe.com/flashplayer/">download</a> a newer version.</div>
+
+  <div id="jquery_jplayer_<?php echo $_SERVER['QUERY_STRING']; ?>" class="jp-jplayer"></div>
+  <div id="jp_container_<?php echo $_SERVER['QUERY_STRING']; ?>" class="jp-audio" role="application">
+    <div class="jp-controls-holder<?php if ($tracks == 1) echo " single"; ?>">
+      <div class="jp-controls">
+        <button class="jp-play" role="button"></button>
+        <button class="jp-previous" role="button"></button>
+        <button class="jp-next" role="button"></button>
+      </div>
+      <div class="jp-progress">
+        <div class="jp-current-time" role="timer"></div>
+        <div class="jp-seek-bar">
+          <div class="jp-play-bar"></div>
+        </div>
+        <div class="jp-duration" role="timer"></div>
+      </div>
+      <div class="jp-volume-controls">
+        <button class="jp-mute" role="button"></button>
+        <div class="jp-volume-bar">
+          <div class="jp-volume-bar-value"></div>
+        </div>
+      </div>
+    </div>
+    <div class="jp-playlist"><ul></ul></div>
+  </div>
+
   <script type="text/javascript">
-    var so = new SWFObject("inc/player.swf", "player", "600", "<?php echo 32 + $playlistheight; ?>", "9");
-    so.addVariable("skin", "inc/playerskin.swf");
-    so.addVariable("backcolor", "#4F4D4D");
-    so.addVariable("playlist", "bottom");
-    so.addVariable("playlistsize", "<?php echo $playlistheight; ?>");
-    so.addVariable("playlistfile", "audio/courses/<?php echo $_SERVER['QUERY_STRING']; ?>/playlist.xml");
-    so.write("audio<?php echo $_SERVER['QUERY_STRING']; ?>");
+    $(document).ready(function(){
+      new jPlayerPlaylist({ jPlayer: "#jquery_jplayer_<?php echo $_SERVER['QUERY_STRING']; ?>", cssSelectorAncestor: "#jp_container_<?php echo $_SERVER['QUERY_STRING']; ?>" },
+        [ <?php echo $playlist; ?> ], {
+        swfPath: "inc/jplayer", useStateClassSkin: true, autoBlur: false,
+        smoothPlayBar: true, keyEnabled: true, remainingDuration: true
+      });
+      $.jPlayer.timeFormat.showHour = true;
+    });
   </script>
   <?php
-  }
-  
-  echo $mp3;
+  //echo $mp3;
 }
 ?>
 

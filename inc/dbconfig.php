@@ -1,8 +1,8 @@
 <?php
 $dbHost = "localhost";
-$dbUser = "remediho_lradm";
-$dbPass = "remedi";
-$dbName = "remediho_lonerganresource";
+$dbUser = "resource";
+$dbPass = "Foresite4474";
+$dbName = "resource";
 
 $db = mysql_connect($dbHost, $dbUser, $dbPass);
 mysql_select_db($dbName, $db);

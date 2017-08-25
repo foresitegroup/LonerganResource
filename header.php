@@ -6,13 +6,13 @@
   <META http-equiv="pragma" content="no-cache">
   <META http-equiv="imagetoolbar" content="no">
   <META name="language" content="en">
-  <META name="author" content="Remedi Creative">
+  <META name="author" content="Foresite Group">
   <META name="description" content="Lonergan Resource is a repository of secondary-source materials valuable for Lonergan Studies. To include major papers and articles on Lonergan, recordings of major lectures and conferences, and longer monographs republished from books or composed for this website.">
   <META name="keywords" content="Bernard Lonergan, Insight, Method in Theology, Lonergan, theology, philosophy, economics, consciousness, knowledge, systematic theology, cognitional theory, epistemology, metaphysics, functional specialties, method, macroeconomics, interiority, differentiation of consciousness, generalized empirical method, emergent probability, meaning, human good, values, religion, question of God, scientific method, historical method, hermeneutics, logic, Aquinas, Aristotle, Augustine, Newman, existentialism">
   <title>Lonergan Resource<?php if ($PageTitle != "") { echo " | $PageTitle"; } ?></title>
   <link rel="shortcut icon" href="images/favicon.ico">
   <link rel="stylesheet" href="inc/lr2009.css" type="text/css" media="screen,print">
-  <script type="text/javascript" src="inc/swfobject.js"></script>
+  
   <!--[if lt IE 7]>
     <script src="inc/IE8.js" type="text/javascript"></script>
   <![endif]-->
@@ -27,7 +27,7 @@
     }
   </script>
   
-  <script type="text/javascript" src="inc/jquery-1.5.1.js"></script>
+  <script type="text/javascript" src="inc/jquery-1.12.4.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
       $("a[href^='http'], a[href$='.pdf']").not("[href*='" + window.location.host + "']").attr('target','_blank');
