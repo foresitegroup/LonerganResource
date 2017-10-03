@@ -8,10 +8,52 @@ if (($_GET['a'] != "delete") && ($_POST['date'] != "")) {
 
 switch ($_GET['a']) {
   case "add":
-    $query = "INSERT INTO contributors (conference, datetime, name, title, abstract, file1, file2, file3, file4, file5, file6, display, adobe) VALUES ('" . $_POST['conference'] . "', '$date', '" . $_POST['name'] . "', '" . $_POST['title'] . "', '" . $_POST['abstract'] . "', '" . $_POST['file1'] . "', '" . $_POST['file2'] . "', '" . $_POST['file3'] . "', '" . $_POST['file4'] . "', '" . $_POST['file5'] . "', '" . $_POST['file6'] . "', '" . $_POST['display'] . "', '" . $_POST['adobe'] . "')";
+    $query = "INSERT INTO contributors (
+              conference,
+              datetime,
+              name,
+              title,
+              abstract,
+              file1,
+              file2,
+              file3,
+              file4,
+              file5,
+              file6,
+              display,
+              adobe
+            ) VALUES (
+              '" . $_POST['conference'] . "',
+              '" . $date . "',
+              '" . mysql_real_escape_string($_POST['name']) . "',
+              '" . mysql_real_escape_string($_POST['title']) . "',
+              '" . mysql_real_escape_string($_POST['abstract']) . "',
+              '" . $_POST['file1'] . "',
+              '" . $_POST['file2'] . "',
+              '" . $_POST['file3'] . "',
+              '" . $_POST['file4'] . "',
+              '" . $_POST['file5'] . "',
+              '" . $_POST['file6'] . "',
+              '" . $_POST['display'] . "',
+              '" . $_POST['adobe'] . "'
+            )";
     break;
   case "edit":
-    $query = "UPDATE contributors SET conference = '" . $_POST['conference'] . "', datetime = '$date', name = '" . $_POST['name'] . "', title = '" . $_POST['title'] . "', abstract = '" . $_POST['abstract'] . "', file1 = '" . $_POST['file1'] . "', file2 = '" . $_POST['file2'] . "', file3 = '" . $_POST['file3'] . "', file4 = '" . $_POST['file4'] . "', file5 = '" . $_POST['file5'] . "', file6 = '" . $_POST['file6'] . "', display = '" . $_POST['display'] . "', adobe = '" . $_POST['adobe'] . "' WHERE id = '" . $_POST['id'] . "'";
+    $query = "UPDATE contributors SET 
+                conference = '" . $_POST['conference'] . "',
+                datetime = '$date',
+                name = '" . mysql_real_escape_string($_POST['name']) . "',
+                title = '" . mysql_real_escape_string($_POST['title']) . "',
+                abstract = '" . mysql_real_escape_string($_POST['abstract']) . "',
+                file1 = '" . $_POST['file1'] . "',
+                file2 = '" . $_POST['file2'] . "',
+                file3 = '" . $_POST['file3'] . "',
+                file4 = '" . $_POST['file4'] . "',
+                file5 = '" . $_POST['file5'] . "',
+                file6 = '" . $_POST['file6'] . "',
+                display = '" . $_POST['display'] . "',
+                adobe = '" . $_POST['adobe'] . "' 
+              WHERE id = '" . $_POST['id'] . "'";
     break;
   case "delete":
     $query = "DELETE FROM contributors WHERE id = '" . $_GET['id'] . "'";
