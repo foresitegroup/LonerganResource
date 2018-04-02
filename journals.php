@@ -19,8 +19,8 @@ function Journals($result) {
   ?>
   
   <a href="javascript:toggle('<?php echo $row['id']; ?>')">
-  <em><?php echo $row['title']; ?></em>
   <?php
+  echo "<em>".$row['title']."</em>";
   if ($row['volume'] != "" || $row['number'] != "") {
     echo ",";
     if ($row['volume'] != "") echo " Vol. " . $row['volume'];
@@ -35,17 +35,12 @@ function Journals($result) {
     echo str_replace("\n", "<br>", $row['description']);
     
     echo "<div style=\"padding-top: 5px;\">\n";
-      // Link to PDFs (if any)
-      for ($i = 1; $i <= 5; $i++) {
-        if (end(explode(".", $row['file' . $i])) == "pdf") {
-          $document = file_get_contents("pdf/journals/" . $row['file' . $i]);
-          $pdfauthor = (preg_match_all("/\/Author\((.*?)\)/",$document,$match)) ? end(end($match)) : "";
-          $pdftitle = (preg_match_all("/\/Title\((.*?)\)/",$document,$match)) ? end(end($match)) : $row['file' . $i];
-          $pdf = ($pdfauthor != "" && $pdftitle != $row['file' . $i]) ? $pdfauthor . ", <em>" . $pdftitle . "</em>" : "<em>" . $pdftitle . "</em>";
-          
-          echo "<a href=\"pdf/journals/" . $row['file' . $i] . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> View " . $pdf . "</a><br>\n";
-        }
-      }
+      $document = file_get_contents("pdf/journals/" . $row['file1'], true);
+      preg_match_all("/\/Title\((.*?)\)/",$document,$match);
+      $pdftitle = ($match[1][0] != "") ? $match[1][0] : $row['file1'];
+      $pdf = "<em>" . $pdftitle . "</em>";
+      
+      echo "<a href=\"pdf/journals/" . $row['file1'] . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> View " . $pdf . "</a><br>\n";
     echo "</div>\n";
     ?>
   </div><br>
@@ -55,6 +50,11 @@ function Journals($result) {
 
 $result = mysql_query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '1' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
 Journals($result); // Method
+
+echo "<br>\n";
+
+$result = mysql_query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '3' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
+Journals($result); // Method n.s.
 
 echo "<br>\n";
 
