@@ -61,6 +61,8 @@ if (mysql_num_rows($result) > 0) {
             $mp3 .= "<a href=\"audio/contributors/" . $row['file' . $i] . "\"><img src=\"images/mp3.gif\" alt=\"MP3\"> Download <em>" . $title . "</em></a><br>\n";
           }
         }
+
+        if ($playlist != "") {
         ?>
 
         <div id="jquery_jplayer_<?php echo $row['id']; ?>" class="jp-jplayer"></div>
@@ -100,7 +102,9 @@ if (mysql_num_rows($result) > 0) {
         </script>
 
         <?php
-        echo "<div style=\"padding-top: 5px;\">\n";
+        }
+
+        echo "<div>\n";
           //echo $mp3;
           
           if ($row['adobe'] == "yes") echo '<br><a href="https://get.adobe.com/reader/">Adobe Reader</a> is required to play embedded media files.';
