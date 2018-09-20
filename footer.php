@@ -22,7 +22,7 @@
       </div> <!-- END calendar -->
       
       <br><br>
-      <a href="pdf/2017_Letter_from_Robert_M._Doran.pdf" style="font-weight: bold; font-size: 170%;">2017 Letter from Robert M. Doran</a> <img src="images/pdf.gif" alt="PDF">
+      <a href="pdf/2018_Letter_from_Robert_M._Doran.pdf" style="font-weight: bold; font-size: 170%;">2018 Letter from Robert M. Doran</a> <img src="images/pdf.gif" alt="PDF">
     </div> <!-- END sidebar -->
     
     <div style="clear: both;"></div>
