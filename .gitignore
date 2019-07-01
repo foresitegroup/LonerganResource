@@ -48,8 +48,6 @@ audio/
 backup/
 pdf/
 inc/dbconfig.php
-inc/getID3
-inc/getid3
 
 admin/export-test.php
 admin/inc/PHPExcel.php
