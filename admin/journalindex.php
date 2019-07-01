@@ -59,8 +59,8 @@ include "../inc/dbconfig.php";
           <select name="titleid" style="width: 345px;">
             <option value="">Select...</option>
             <?php
-            $tresult = mysql_query("SELECT * FROM journaltitles ORDER BY title ASC");
-            while($trow = mysql_fetch_array($tresult)) {
+            $tresult = $mysqli->query("SELECT * FROM journaltitles ORDER BY title ASC");
+            while($trow = $tresult->fetch_array(MYSQLI_ASSOC)) {
               echo "<option value=\"" . $trow['id'] . "\">" . $trow['title'] . "</option>\n";
             }
             ?>
@@ -96,9 +96,9 @@ include "../inc/dbconfig.php";
       <h1>Available Journals</h1>
       
       <?php
-      //$result = mysql_query("SELECT * FROM journals JOIN journaltitles ON journals.titleid = journaltitles.id ORDER BY title, volume+0, number+0 ASC");
-      $result = mysql_query("SELECT * FROM journaltitles,journals WHERE journals.titleid = journaltitles.id ORDER BY title, volume+0, number+0 ASC");
-      while($row = mysql_fetch_array($result)) {
+      //$result = $mysqli->query("SELECT * FROM journals JOIN journaltitles ON journals.titleid = journaltitles.id ORDER BY title, volume+0, number+0 ASC");
+      $result = $mysqli->query("SELECT * FROM journaltitles,journals WHERE journals.titleid = journaltitles.id ORDER BY title, volume+0, number+0 ASC");
+      while($row = $result->fetch_array(MYSQLI_ASSOC)) {
         echo "
         <div style=\"margin-left: 90px;\">
           <div style=\"float: left; width: 90px; margin-left: -90px; font-size: 120%;\">

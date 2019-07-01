@@ -1,5 +1,13 @@
 <?php
-
+/////////////////////////////////////////////////////////////////
+/// getID3() by James Heinrich <info@getid3.org>               //
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
+//                                                             //
+// /demo/demo.audioinfo.class.php - part of getID3()           //
+//                                                            ///
+/////////////////////////////////////////////////////////////////
 // +----------------------------------------------------------------------+
 // | PHP version 4.1.0                                                    |
 // +----------------------------------------------------------------------+
@@ -24,9 +32,8 @@
 // |   $au = new AudioInfo();                                             |
 // |   print_r($au->Info('file.flac');                                    |
 // +----------------------------------------------------------------------+
-// | Authors: Allan Hansen <ahØartemis*dk>                                |
+// | Authors: Allan Hansen <ahÃ˜artemis*dk>                                |
 // +----------------------------------------------------------------------+
-//
 
 
 
@@ -48,17 +55,16 @@ class AudioInfo {
 	/**
 	* Private variables
 	*/
-	var $result = NULL;
-	var $info   = NULL;
-
-
+	private $result;
+	private $info;
+	private $getID3;
 
 
 	/**
 	* Constructor
 	*/
 
-	function AudioInfo() {
+	function __construct() {
 
 		// Initialize getID3 engine
 		$this->getID3 = new getID3;
@@ -73,11 +79,12 @@ class AudioInfo {
 	/**
 	* Extract information - only public function
 	*
-	* @access   public
-	* @param    string  file    Audio file to extract info from.
+	* @param    string  $file    Audio file to extract info from.
+	*
+	* @return array
 	*/
 
-	function Info($file) {
+	public function Info($file) {
 
 		// Analyze file
 		$this->info = $this->getID3->analyze($file);
@@ -88,24 +95,24 @@ class AudioInfo {
 		}
 
 		// Init wrapper object
-		$this->result = array ();
-		$this->result['format_name']     = @$this->info['fileformat'].'/'.@$this->info['audio']['dataformat'].(isset($this->info['video']['dataformat']) ? '/'.@$this->info['video']['dataformat'] : '');
-		$this->result['encoder_version'] = @$this->info['audio']['encoder'];
-		$this->result['encoder_options'] = @$this->info['audio']['encoder_options'];
-		$this->result['bitrate_mode']    = @$this->info['audio']['bitrate_mode'];
-		$this->result['channels']        = @$this->info['audio']['channels'];
-		$this->result['sample_rate']     = @$this->info['audio']['sample_rate'];
-		$this->result['bits_per_sample'] = @$this->info['audio']['bits_per_sample'];
-		$this->result['playing_time']    = @$this->info['playtime_seconds'];
-		$this->result['avg_bit_rate']    = @$this->info['audio']['bitrate'];
-		$this->result['tags']            = @$this->info['tags'];
-		$this->result['comments']        = @$this->info['comments'];
-		$this->result['warning']         = @$this->info['warning'];
-		$this->result['md5']             = @$this->info['md5_data'];
+		$this->result = array();
+		$this->result['format_name']     = (isset($this->info['fileformat']) ? $this->info['fileformat'] : '').'/'.(isset($this->info['audio']['dataformat']) ? $this->info['audio']['dataformat'] : '').(isset($this->info['video']['dataformat']) ? '/'.$this->info['video']['dataformat'] : '');
+		$this->result['encoder_version'] = (isset($this->info['audio']['encoder'])         ? $this->info['audio']['encoder']         : '');
+		$this->result['encoder_options'] = (isset($this->info['audio']['encoder_options']) ? $this->info['audio']['encoder_options'] : '');
+		$this->result['bitrate_mode']    = (isset($this->info['audio']['bitrate_mode'])    ? $this->info['audio']['bitrate_mode']    : '');
+		$this->result['channels']        = (isset($this->info['audio']['channels'])        ? $this->info['audio']['channels']        : '');
+		$this->result['sample_rate']     = (isset($this->info['audio']['sample_rate'])     ? $this->info['audio']['sample_rate']     : '');
+		$this->result['bits_per_sample'] = (isset($this->info['audio']['bits_per_sample']) ? $this->info['audio']['bits_per_sample'] : '');
+		$this->result['playing_time']    = (isset($this->info['playtime_seconds'])         ? $this->info['playtime_seconds']         : '');
+		$this->result['avg_bit_rate']    = (isset($this->info['audio']['bitrate'])         ? $this->info['audio']['bitrate']         : '');
+		$this->result['tags']            = (isset($this->info['tags'])                     ? $this->info['tags']                     : '');
+		$this->result['comments']        = (isset($this->info['comments'])                 ? $this->info['comments']                 : '');
+		$this->result['warning']         = (isset($this->info['warning'])                  ? $this->info['warning']                  : '');
+		$this->result['md5']             = (isset($this->info['md5_data'])                 ? $this->info['md5_data']                 : '');
 
 		// Post getID3() data handling based on file format
-		$method = @$this->info['fileformat'].'Info';
-		if (@$this->info['fileformat'] && method_exists($this, $method)) {
+		$method = (isset($this->info['fileformat']) ? $this->info['fileformat'] : '').'Info';
+		if ($method && method_exists($this, $method)) {
 			$this->$method();
 		}
 
@@ -118,10 +125,9 @@ class AudioInfo {
 	/**
 	* post-getID3() data handling for AAC files.
 	*
-	* @access   private
 	*/
 
-	function aacInfo() {
+	private function aacInfo() {
 		$this->result['format_name']     = 'AAC';
 	}
 
@@ -131,15 +137,14 @@ class AudioInfo {
 	/**
 	* post-getID3() data handling for Wave files.
 	*
-	* @access   private
 	*/
 
-	function riffInfo() {
+	private function riffInfo() {
 		if ($this->info['audio']['dataformat'] == 'wav') {
 
 			$this->result['format_name'] = 'Wave';
 
-		} else if (ereg('^mp[1-3]$', $this->info['audio']['dataformat'])) {
+		} elseif (preg_match('#^mp[1-3]$#', $this->info['audio']['dataformat'])) {
 
 			$this->result['format_name'] = strtoupper($this->info['audio']['dataformat']);
 
@@ -156,10 +161,9 @@ class AudioInfo {
 	/**
 	* * post-getID3() data handling for FLAC files.
 	*
-	* @access   private
 	*/
 
-	function flacInfo() {
+	private function flacInfo() {
 		$this->result['format_name']     = 'FLAC';
 	}
 
@@ -170,10 +174,9 @@ class AudioInfo {
 	/**
 	* post-getID3() data handling for Monkey's Audio files.
 	*
-	* @access   private
 	*/
 
-	function macInfo() {
+	private function macInfo() {
 		$this->result['format_name']     = 'Monkey\'s Audio';
 	}
 
@@ -182,12 +185,9 @@ class AudioInfo {
 
 
 	/**
-	* post-getID3() data handling for Lossless Audio files.
-	*
-	* @access   private
-	*/
-
-	function laInfo() {
+	 * post-getID3() data handling for Lossless Audio files.
+	 */
+	private function laInfo() {
 		$this->result['format_name']     = 'La';
 	}
 
@@ -314,6 +314,3 @@ class AudioInfo {
 	}
 
 }
-
-
-?>

@@ -14,7 +14,7 @@ function PopulateSheet($objPHPExcel) {
 	INNER JOIN `journals` on journaltitles.id = journals.titleid
 	ORDER BY journaltitles.title, journals.volume+0, journals.number+0 ASC;
 	";
-	$result = mysql_query($query);
+	$result = $mysqli->query($query);
 	$headings = array("Title","Volume","Number","Description","File");
   $lastcol = "E";
 	
@@ -27,7 +27,7 @@ function PopulateSheet($objPHPExcel) {
 	
 	// Loop through the result set
 	$rowNumber = 2;
-	while ($row = mysql_fetch_row($result)) {
+	while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
 		$col = 'A';
 		foreach($row as $cell) {
 			$objPHPExcel->getActiveSheet()->setCellValueExplicit($col.$rowNumber, $cell, PHPExcel_Cell_DataType::TYPE_STRING);

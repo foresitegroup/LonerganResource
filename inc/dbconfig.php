@@ -4,8 +4,7 @@ $dbUser = "resource";
 $dbPass = "Foresite4474";
 $dbName = "resource";
 
-$db = mysql_connect($dbHost, $dbUser, $dbPass);
-mysql_select_db($dbName, $db);
+$mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
 
 putenv("TZ=US/Central");
 ?>

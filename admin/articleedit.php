@@ -43,8 +43,8 @@ include "../inc/dbconfig.php";
     <h1>Edit Article</h1>
       
     <?php
-    $result = mysql_query("SELECT * FROM articles WHERE id = '" . $_GET['id'] . "'");
-    $row = mysql_fetch_array($result);
+    $result = $mysqli->query("SELECT * FROM articles WHERE id = '" . $_GET['id'] . "'");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
     ?>
     
     <form action="articledb.php?a=edit" method="POST">

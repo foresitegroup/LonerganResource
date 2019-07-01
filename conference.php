@@ -1,8 +1,8 @@
 <?php
 include("inc/dbconfig.php");
 require_once("inc/getid3/getid3/getid3.php");
-$result = mysql_query("SELECT * FROM conference WHERE id = '" . $_SERVER['QUERY_STRING'] . "'");
-$row = mysql_fetch_array($result);
+$result = $mysqli->query("SELECT * FROM conference WHERE id = '" . $_SERVER['QUERY_STRING'] . "'");
+$row = $result->fetch_array(MYSQLI_ASSOC);
 
 $datestr = date("M d", $row['startdate']);
 if (($row['enddate'] == "") || ($row['enddate'] == $row['startdate'])) {
@@ -26,13 +26,13 @@ include "header.php";
 <?php
 echo str_replace("\n", "<br>", $row['description']);
 
-$result = mysql_query("SELECT * FROM contributors WHERE display = '' AND conference = '" . $_SERVER['QUERY_STRING'] . "' ORDER BY datetime ASC");
-if (mysql_num_rows($result) > 0) {
+$result = $mysqli->query("SELECT * FROM contributors WHERE display = '' AND conference = '" . $_SERVER['QUERY_STRING'] . "' ORDER BY datetime ASC");
+if ($result->num_rows > 0) {
   echo "<br><br>Available contributions from this conference:\n<ol>\n";
 
-  mysql_data_seek($result, 0);
+  $result->data_seek(0);
 
-  while($row = mysql_fetch_array($result)) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     
 ?>
     <li>
@@ -46,7 +46,8 @@ if (mysql_num_rows($result) > 0) {
         $tracks = 0;
         $mp3 = "";
         for ($i = 1; $i <= 6; $i++) {
-          if (end(explode(".", $row['file' . $i])) == "mp3") {
+          $mext = explode(".", $row['file' . $i]);
+          if (end($mext) == "mp3") {
             $getID3 = new getID3;
             $ThisFileInfo = $getID3->analyze("audio/contributors/" . $row['file' . $i]);
 
@@ -111,10 +112,19 @@ if (mysql_num_rows($result) > 0) {
 
           // Link to PDFs (if any)
           for ($i = 1; $i <= 6; $i++) {
-            if (end(explode(".", $row['file' . $i])) == "pdf") {
+            $pext = explode(".", $row['file' . $i]);
+            if (end($pext) == "pdf") {
               $document = file_get_contents("pdf/contributors/" . $row['file' . $i]);
-              $pdfauthor = (preg_match_all("/\/Author\((.*?)\)/",$document,$match)) ? end(end($match)) : "";
-              $pdftitle = (preg_match_all("/\/Title\((.*?)\)/",$document,$match)) ? end(end($match)) : $row['file' . $i];
+
+              preg_match_all("/\/Author\((.*?)\)/",$document,$aarr);
+              $aarr_last = end($aarr);
+              $pdfauthor = end($aarr_last);
+
+              preg_match_all("/\/Title\((.*?)\)/",$document,$tarr);
+              $tarr_last = end($tarr);
+              $pdftitle = end($tarr_last);
+              if ($pdftitle == "") $pdftitle = $value;
+
               $pdf = ($pdfauthor != "" && $pdftitle != $row['file' . $i]) ? $pdfauthor . ", <em>" . $pdftitle . "</em>" : "<em>" . $pdftitle . "</em>";
 
               echo "<br><a href=\"pdf/contributors/" . $row['file' . $i] . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> View " . $pdf . "</a>\n";

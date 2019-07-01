@@ -7,8 +7,8 @@ include "header.php";
 
 <?php
 $query = ($_SERVER['QUERY_STRING']) ? "SELECT * FROM news WHERE id = '" . $_SERVER['QUERY_STRING'] . "'" : "SELECT * FROM news WHERE display = '' ORDER BY id DESC";
-$result = mysql_query($query);
-while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query($query);
+while($row = $result->fetch_array(MYSQLI_ASSOC)) {
   echo "<a name=\"" . $row['id'] . "\"></a>\n";
   
   echo "<h2>" . $row['title'] . "</h2>\n";

@@ -19,9 +19,9 @@ switch ($_SERVER['QUERY_STRING']) {
     break;
 }
 
-$result = mysql_query("SELECT * FROM newsletter ORDER BY email ASC");
+$result = $mysqli->query("SELECT * FROM newsletter ORDER BY email ASC");
 
-while($row = mysql_fetch_array($result)) {
+while($row = $result->fetch_array(MYSQLI_ASSOC)) {
   $data .= $row['email'] . "\r\n";
 }
 

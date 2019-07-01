@@ -25,9 +25,9 @@ switch ($_GET['a']) {
             ) VALUES (
               '" . $_POST['conference'] . "',
               '" . $date . "',
-              '" . mysql_real_escape_string($_POST['name']) . "',
-              '" . mysql_real_escape_string($_POST['title']) . "',
-              '" . mysql_real_escape_string($_POST['abstract']) . "',
+              '" . $mysqli->real_escape_string($_POST['name']) . "',
+              '" . $mysqli->real_escape_string($_POST['title']) . "',
+              '" . $mysqli->real_escape_string($_POST['abstract']) . "',
               '" . $_POST['file1'] . "',
               '" . $_POST['file2'] . "',
               '" . $_POST['file3'] . "',
@@ -42,9 +42,9 @@ switch ($_GET['a']) {
     $query = "UPDATE contributors SET 
                 conference = '" . $_POST['conference'] . "',
                 datetime = '$date',
-                name = '" . mysql_real_escape_string($_POST['name']) . "',
-                title = '" . mysql_real_escape_string($_POST['title']) . "',
-                abstract = '" . mysql_real_escape_string($_POST['abstract']) . "',
+                name = '" . $mysqli->real_escape_string($_POST['name']) . "',
+                title = '" . $mysqli->real_escape_string($_POST['title']) . "',
+                abstract = '" . $mysqli->real_escape_string($_POST['abstract']) . "',
                 file1 = '" . $_POST['file1'] . "',
                 file2 = '" . $_POST['file2'] . "',
                 file3 = '" . $_POST['file3'] . "',
@@ -60,9 +60,9 @@ switch ($_GET['a']) {
     break;
 }
 
-mysql_query($query) or die(mysql_error());
+$mysqli->query($query));
 
-$TheID = ($_GET['a'] == "add") ? mysql_insert_id() : $_REQUEST['id'];
+$TheID = ($_GET['a'] == "add") ? $mysqli->insert_id : $_REQUEST['id'];
 
 // Delete XML playlist...
 if (file_exists("../audio/contributors/cont" .  $TheID . ".xml")) {

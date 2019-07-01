@@ -9,7 +9,7 @@
   <META name="author" content="Foresite Group">
   <META name="description" content="Lonergan Resource is a repository of secondary-source materials valuable for Lonergan Studies. To include major papers and articles on Lonergan, recordings of major lectures and conferences, and longer monographs republished from books or composed for this website.">
   <META name="keywords" content="Bernard Lonergan, Insight, Method in Theology, Lonergan, theology, philosophy, economics, consciousness, knowledge, systematic theology, cognitional theory, epistemology, metaphysics, functional specialties, method, macroeconomics, interiority, differentiation of consciousness, generalized empirical method, emergent probability, meaning, human good, values, religion, question of God, scientific method, historical method, hermeneutics, logic, Aquinas, Aristotle, Augustine, Newman, existentialism">
-  <title>Lonergan Resource<?php if ($PageTitle != "") { echo " | $PageTitle"; } ?></title>
+  <title>Lonergan Resource<?php if (isset($PageTitle)) echo " | " . $PageTitle; ?></title>
   <link rel="shortcut icon" href="images/favicon.ico">
   <link rel="stylesheet" href="inc/lr2009.css" type="text/css" media="screen,print">
   
@@ -20,7 +20,7 @@
     function borderheight() {
       var cHeight = document.getElementById('content-sides').offsetHeight - 68 + "px";
       document.getElementById('sidebar').style.height = cHeight;
-      <?php if ($PageTitle == "") { ?>document.getElementById('main-mid').style.height = cHeight;<?php } ?>
+      <?php if (!isset($PageTitle)) { ?>document.getElementById('main-mid').style.height = cHeight;<?php } ?>
     }
     function toggle(obj) {
       document.getElementById(obj).style.display = (document.getElementById(obj).style.display != 'none' ? 'none' : '' );
@@ -46,18 +46,18 @@
   </script>
   <!-- END Google Analytics -->
 </head>
-<body onLoad="borderheight()"<?php if ($PageTitle == "") { echo "id=\"main\""; } ?>>
+<body onLoad="borderheight()"<?php if (!isset($PageTitle)) { echo " id=\"main\""; } ?>>
 
 <!-- BEGIN menubar -->
 <div class="menubar-l"></div>
 <div class="menubar-r"></div>
 <div class="menubar-b"></div>
 <div class="menubar-fl"></div>
-<div id="logo-bg"><img src="images/background-logo<?php if ($PageTitle == "") { echo "-main"; } ?>.jpg" alt=""></div>
+<div id="logo-bg"><img src="images/background-logo<?php if (!isset($PageTitle)) { echo "-main"; } ?>.jpg" alt=""></div>
 <!-- END menubar -->
 
 <div id="wrap">
-  <div id="header<?php if ($PageTitle == "") { echo "-main"; } ?>">
+  <div id="header<?php if (!isset($PageTitle)) { echo "-main"; } ?>">
     <div id="top">
       <div id="topmenu">
         <a href="contact.php">contact</a>
@@ -103,7 +103,7 @@
     
     <div style="clear: both;"></div>
     
-    <?php if ($PageTitle == "") { ?>
+    <?php if (!isset($PageTitle)) { ?>
     <div id="header-text">
       <div class="headline">
         LONERGAN <div>RESOURCE</div>
@@ -119,5 +119,5 @@
   <div id="content-top"></div>
   
   <div id="content-sides">
-    <?php if ($PageTitle != "") { echo "<div id=\"content\">"; } ?>
+    <?php if (isset($PageTitle)) { echo "<div id=\"content\">"; } ?>
       

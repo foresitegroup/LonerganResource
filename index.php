@@ -13,9 +13,9 @@
   <h1>News &amp; Announcements</h1>
   
   <?php
-  $result = mysql_query("SELECT * FROM news ORDER BY id DESC");
+  $result = $mysqli->query("SELECT * FROM news ORDER BY id DESC");
   $oe = "odd";
-  while($row = mysql_fetch_array($result)) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     echo "<div class=\"news";
     if ($oe == "odd") { echo "-b"; $oe = "even"; } else { $oe = "odd"; }
     echo "\">\n";

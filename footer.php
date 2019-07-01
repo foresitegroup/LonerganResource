@@ -1,4 +1,4 @@
-    <?php if ($PageTitle != "") { echo "</div>  <!-- END content -->"; } ?>
+    <?php if (isset($PageTitle)) { echo "</div>  <!-- END content -->"; } ?>
     
     <div id="sidebar">
       <h1>Newsletter</h1>
@@ -12,8 +12,8 @@
       <h1>Calendar</h1>
       <div id="calendar">
         <?php
-        $calresult = mysql_query("SELECT * FROM calendar WHERE date >= '" . strtotime("Today") . "' ORDER BY date ASC");
-        while($calrow = mysql_fetch_array($calresult)) {
+        $calresult = $mysqli->query("SELECT * FROM calendar WHERE date >= '" . strtotime("Today") . "' ORDER BY date ASC");
+        while($calrow = $calresult->fetch_array(MYSQLI_ASSOC)) {
           echo "<a href=\"calendar.php?" . $calrow['id'] . "\"><strong>" . date("M d", $calrow['date']) . ":</strong> " . $calrow['event'] . "</a><br>\n";
         }
         ?>
@@ -40,7 +40,7 @@
 
 <div id="preload">
   <img src="images/signup-h.png" alt="">
-  <?php if ($PageTitle == "") { ?>
+  <?php if (!isset($PageTitle)) { ?>
   <img src="images/explore-h.png" alt="">
   <?php } ?>
 </div> <!-- END preload -->

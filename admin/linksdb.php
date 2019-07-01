@@ -14,14 +14,14 @@ switch ($_GET['a']) {
   
   case "sort":
     // Get page and sort number we are changing
-    $result = mysql_query("SELECT * FROM links WHERE id = '" . $_GET['id'] . "'");
-    $row = mysql_fetch_array($result);
+    $result = $mysqli->query("SELECT * FROM links WHERE id = '" . $_GET['id'] . "'");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
     
     // Moving up or down?
     $sort = ($_GET['d'] == "u") ? $row['sort'] - 1 : $row['sort'] + 1;
     
     // Change sort number of neighboring record
-    mysql_query("UPDATE links SET sort = '" . $row['sort'] . "' WHERE sort = '" . $sort . "'");
+    $mysqli->query("UPDATE links SET sort = '" . $row['sort'] . "' WHERE sort = '" . $sort . "'");
     
     // Change sort number of current record
     $query = "UPDATE links SET sort = '" . $sort . "' WHERE id = '" . $_GET['id'] . "'";
@@ -29,7 +29,7 @@ switch ($_GET['a']) {
     break;
 }
 
-mysql_query($query) or die(mysql_error());
+$mysqli->query($query);
 
-header( "Location: linksindex.php" );
+header("Location: linksindex.php");
 ?>

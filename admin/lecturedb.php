@@ -14,9 +14,9 @@ switch ($_GET['a']) {
     break;
 }
 
-mysql_query($query) or die(mysql_error());
+$mysqli->query($query);
 
-$TheID = ($_GET['a'] == "add") ? mysql_insert_id() : $_REQUEST['id'];
+$TheID = ($_GET['a'] == "add") ? $mysqli->insert_id : $_REQUEST['id'];
 
 // Delete XML playlist...
 if (file_exists("../audio/lectures/cont" .  $TheID . ".xml")) {
@@ -48,5 +48,5 @@ if ($_GET['a'] != "delete") {
   }
 }
 
-header( "Location: lectureindex.php" );
+header("Location: lectureindex.php");
 ?>

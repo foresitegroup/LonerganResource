@@ -35,8 +35,8 @@ include "../inc/dbconfig.php";
     <h1>Edit Newsletter Subscriber</h1>
     
     <?php
-    $result = mysql_query("SELECT * FROM newsletter WHERE id = '" . $_GET['id'] . "'");
-    $row = mysql_fetch_array($result);
+    $result = $mysqli->query("SELECT * FROM newsletter WHERE id = '" . $_GET['id'] . "'");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
     ?>
     
     <form action="nldb.php?a=edit" method="POST">

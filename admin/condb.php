@@ -20,9 +20,9 @@ switch ($_GET['a']) {
                 'no',
                 '$startdate',
                 '$enddate',
-                '" . mysql_real_escape_string($_POST['title']) . "',
-                '" . mysql_real_escape_string($_POST['location']) . "',
-                '" . mysql_real_escape_string($_POST['description']) . "',
+                '" . $mysqli->real_escape_string($_POST['title']) . "',
+                '" . $mysqli->real_escape_string($_POST['location']) . "',
+                '" . $mysqli->real_escape_string($_POST['description']) . "',
                 '" . $_POST['display'] . "'
               )";
     break;
@@ -30,9 +30,9 @@ switch ($_GET['a']) {
     $query = "UPDATE conference SET 
                 startdate = '$startdate',
                 enddate = '$enddate',
-                title = '" . mysql_real_escape_string($_POST['title']) . "',
-                location = '" . mysql_real_escape_string($_POST['location']) . "',
-                description = '" . mysql_real_escape_string($_POST['description']) . "',
+                title = '" . $mysqli->real_escape_string($_POST['title']) . "',
+                location = '" . $mysqli->real_escape_string($_POST['location']) . "',
+                description = '" . $mysqli->real_escape_string($_POST['description']) . "',
                 display = '" . $_POST['display'] . "' 
               WHERE id = '" . $_POST['id'] . "'";
     break;
@@ -41,7 +41,7 @@ switch ($_GET['a']) {
     break;
 }
 
-mysql_query($query) or die(mysql_error());
+$mysqli->query($query));
 
-header( "Location: conindex.php" );
+header("Location: conindex.php");
 ?>

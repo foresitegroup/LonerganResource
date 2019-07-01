@@ -70,8 +70,8 @@ include "../inc/dbconfig.php";
       <h1>Available Conferences</h1>
       
       <?php
-      $result = mysql_query("SELECT * FROM conference ORDER BY startdate + 0 ASC");
-      while($row = mysql_fetch_array($result)) {
+      $result = $mysqli->query("SELECT * FROM conference ORDER BY startdate + 0 ASC");
+      while($row = $result->fetch_array(MYSQLI_ASSOC)) {
         $datestr = date("M d", $row['startdate']);
         if (($row['enddate'] == "") || ($row['enddate'] == $row['startdate'])) {
           $datestr .= ", " . date("Y", $row['startdate']);

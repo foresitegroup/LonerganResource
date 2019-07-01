@@ -19,8 +19,8 @@ if ($_SERVER['QUERY_STRING']) {
   $id = "WHERE display = ''";
 }
 
-$result = mysql_query("SELECT * FROM lectures $id ORDER BY name+0 ASC");
-while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM lectures $id ORDER BY name+0 ASC");
+while($row = $result->fetch_array(MYSQLI_ASSOC)) {
 ?>
 
 <?php if ($_SERVER['QUERY_STRING'] == "") { echo "<a href=\"javascript:toggle('" . $row['id'] . "')\">"; } ?>
@@ -36,7 +36,8 @@ while($row = mysql_fetch_array($result)) {
   $tracks = 0;
   $mp3 = "";
   for ($i = 1; $i <= 5; $i++) {
-    if (end(explode(".", $row['file' . $i])) == "mp3") {
+    $mext = explode(".", $row['file' . $i]);
+    if (end($mext) == "mp3") {
       $getID3 = new getID3;
       $ThisFileInfo = $getID3->analyze("audio/lectures/" . $row['file' . $i]);
 
@@ -100,10 +101,19 @@ while($row = mysql_fetch_array($result)) {
     
     // Link to PDFs (if any)
     for ($i = 1; $i <= 5; $i++) {
-      if (end(explode(".", $row['file' . $i])) == "pdf") {
+      $pext = explode(".", $row['file' . $i]);
+      if (end($pext) == "pdf") {
         $document = file_get_contents("pdf/lectures/" . $row['file' . $i]);
-        $pdfauthor = (preg_match_all("/\/Author\((.*?)\)/",$document,$match)) ? end(end($match)) : "";
-        $pdftitle = (preg_match_all("/\/Title\((.*?)\)/",$document,$match)) ? end(end($match)) : $row['file' . $i];
+
+        preg_match_all("/\/Author\((.*?)\)/",$document,$aarr);
+        $aarr_last = end($aarr);
+        $pdfauthor = end($aarr_last);
+
+        preg_match_all("/\/Title\((.*?)\)/",$document,$tarr);
+        $tarr_last = end($tarr);
+        $pdftitle = end($tarr_last);
+        if ($pdftitle == "") $pdftitle = $row['file' . $i];
+
         $pdf = ($pdfauthor != "" && $pdftitle != $row['file' . $i]) ? $pdfauthor . ", <em>" . $pdftitle . "</em>" : "<em>" . $pdftitle . "</em>";
         
         echo "<a href=\"pdf/lectures/" . $row['file' . $i] . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> View " . $pdf . "</a><br>\n";

@@ -1,25 +1,25 @@
 <?php
 /////////////////////////////////////////////////////////////////
 /// getID3() by James Heinrich <info@getid3.org>               //
-//  available at http://getid3.sourceforge.net                 //
-//            or http://www.getid3.org                         //
-/////////////////////////////////////////////////////////////////
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
 //                                                             //
 // /demo/demo.write.php - part of getID3()                     //
 // sample script for demonstrating writing ID3v1 and ID3v2     //
 // tags for MP3, or Ogg comment tags for Ogg Vorbis            //
-// See readme.txt for more details                             //
+//  see readme.txt for more details                            //
 //                                                            ///
 /////////////////////////////////////////////////////////////////
 
 
-die('Due to a security issue, this demo has been disabled. It can be enabled by removing line 16 in demos/demo.write.php');
-
+die('For security reasons, this demo has been disabled. It can be enabled by removing line '.__LINE__.' in demos/'.basename(__FILE__));
 
 $TaggingFormat = 'UTF-8';
 
 header('Content-Type: text/html; charset='.$TaggingFormat);
-echo '<HTML><HEAD><TITLE>getID3() - Sample tag writer</TITLE></HEAD><BODY>';
+echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">';
+echo '<html><head><title>getID3() - Sample tag writer</title></head><style type="text/css">BODY,TD,TH { font-family: sans-serif; font-size: 9pt;" }</style><body>';
 
 require_once('../getid3/getid3.php');
 // Initialize getID3 engine
@@ -30,11 +30,7 @@ getid3_lib::IncludeDependency(GETID3_INCLUDEPATH.'write.php', __FILE__, true);
 
 $browsescriptfilename = 'demo.browse.php';
 
-function FixTextFields($text) {
-	return htmlentities(getid3_lib::SafeStripSlashes($text), ENT_QUOTES);
-}
-
-$Filename = (isset($_REQUEST['Filename']) ? getid3_lib::SafeStripSlashes($_REQUEST['Filename']) : '');
+$Filename = (isset($_REQUEST['Filename']) ? $_REQUEST['Filename'] : '');
 
 
 
@@ -47,7 +43,7 @@ if (isset($_POST['WriteTags'])) {
 		$tagwriter = new getid3_writetags;
 		$tagwriter->filename       = $Filename;
 		$tagwriter->tagformats     = $TagFormatsToWrite;
-		$tagwriter->overwrite_tags = true;
+		$tagwriter->overwrite_tags = false;
 		$tagwriter->tag_encoding   = $TaggingFormat;
 		if (!empty($_POST['remove_other_tags'])) {
 			$tagwriter->remove_other_tags = true;
@@ -56,46 +52,42 @@ if (isset($_POST['WriteTags'])) {
 		$commonkeysarray = array('Title', 'Artist', 'Album', 'Year', 'Comment');
 		foreach ($commonkeysarray as $key) {
 			if (!empty($_POST[$key])) {
-				$TagData[strtolower($key)][] = getid3_lib::SafeStripSlashes($_POST[$key]);
+				$TagData[strtolower($key)][] = $_POST[$key];
 			}
 		}
 		if (!empty($_POST['Genre'])) {
-			$TagData['genre'][] = getid3_lib::SafeStripSlashes($_POST['Genre']);
+			$TagData['genre'][] = $_POST['Genre'];
 		}
 		if (!empty($_POST['GenreOther'])) {
-			$TagData['genre'][] = getid3_lib::SafeStripSlashes($_POST['GenreOther']);
+			$TagData['genre'][] = $_POST['GenreOther'];
 		}
 		if (!empty($_POST['Track'])) {
-			$TagData['track'][] = getid3_lib::SafeStripSlashes($_POST['Track'].(!empty($_POST['TracksTotal']) ? '/'.$_POST['TracksTotal'] : ''));
+			$TagData['track_number'][] = $_POST['Track'].(!empty($_POST['TracksTotal']) ? '/'.$_POST['TracksTotal'] : '');
 		}
 
 		if (!empty($_FILES['userfile']['tmp_name'])) {
 			if (in_array('id3v2.4', $tagwriter->tagformats) || in_array('id3v2.3', $tagwriter->tagformats) || in_array('id3v2.2', $tagwriter->tagformats)) {
 				if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
-					if ($fd = @fopen($_FILES['userfile']['tmp_name'], 'rb')) {
-						$APICdata = fread($fd, filesize($_FILES['userfile']['tmp_name']));
-						fclose ($fd);
+					if ($APICdata = file_get_contents($_FILES['userfile']['tmp_name'])) {
 
-						list($APIC_width, $APIC_height, $APIC_imageTypeID) = GetImageSize($_FILES['userfile']['tmp_name']);
-						$imagetypes = array(1=>'gif', 2=>'jpeg', 3=>'png');
-						if (isset($imagetypes[$APIC_imageTypeID])) {
+						if ($exif_imagetype = exif_imagetype($_FILES['userfile']['tmp_name'])) {
 
 							$TagData['attached_picture'][0]['data']          = $APICdata;
 							$TagData['attached_picture'][0]['picturetypeid'] = $_POST['APICpictureType'];
 							$TagData['attached_picture'][0]['description']   = $_FILES['userfile']['name'];
-							$TagData['attached_picture'][0]['mime']          = 'image/'.$imagetypes[$APIC_imageTypeID];
+							$TagData['attached_picture'][0]['mime']          = image_type_to_mime_type($exif_imagetype);
 
 						} else {
-							echo '<B>invalid image format (only GIF, JPEG, PNG)</B><BR>';
+							echo '<b>invalid image format (only GIF, JPEG, PNG)</b><br>';
 						}
 					} else {
-						echo '<B>cannot open '.$_FILES['userfile']['tmp_name'].'</B><BR>';
+						echo '<b>cannot open '.htmlentities($_FILES['userfile']['tmp_name']).'</b><br>';
 					}
 				} else {
-					echo '<B>!is_uploaded_file('.$_FILES['userfile']['tmp_name'].')</B><BR>';
+					echo '<b>!is_uploaded_file('.htmlentities($_FILES['userfile']['tmp_name']).')</b><br>';
 				}
 			} else {
-				echo '<B>WARNING:</B> Can only embed images for ID3v2<BR>';
+				echo '<b>WARNING:</b> Can only embed images for ID3v2<br>';
 			}
 		}
 
@@ -103,10 +95,10 @@ if (isset($_POST['WriteTags'])) {
 		if ($tagwriter->WriteTags()) {
 			echo 'Successfully wrote tags<BR>';
 			if (!empty($tagwriter->warnings)) {
-				echo 'There were some warnings:<BLOCKQUOTE STYLE="background-color:#FFCC33; padding: 10px;">'.implode('<BR><BR>', $tagwriter->warnings).'</BLOCKQUOTE>';
+				echo 'There were some warnings:<blockquote style="background-color: #FFCC33; padding: 10px;">'.implode('<br><br>', $tagwriter->warnings).'</div>';
 			}
 		} else {
-			echo 'Failed to write tags!<BLOCKQUOTE STYLE="background-color:#FF9999; padding: 10px;">'.implode('<BR><BR>', $tagwriter->errors).'</BLOCKQUOTE>';
+			echo 'Failed to write tags!<div style="background-color: #FF9999; padding: 10px;">'.implode('<br><br>', $tagwriter->errors).'</div>';
 		}
 
 	} else {
@@ -119,12 +111,13 @@ if (isset($_POST['WriteTags'])) {
 }
 
 
-echo '<H4>Sample tag editor/writer</H4>';
-echo '<A HREF="'.$browsescriptfilename.'?listdirectory='.rawurlencode(realpath(dirname($Filename))).'">Browse current directory</A><BR>';
+echo '<div style="font-size: 1.2em; font-weight: bold;">Sample tag editor/writer</div>';
+echo '<a href="'.htmlentities($browsescriptfilename.'?listdirectory='.rawurlencode(realpath(dirname($Filename))), ENT_QUOTES).'">Browse current directory</a><br>';
 if (!empty($Filename)) {
-	echo '<A HREF="'.$_SERVER['PHP_SELF'].'">Start Over</A><BR><BR>';
-	echo '<TABLE BORDER="3" CELLSPACING="0" CELLPADDING="4"><FORM ACTION="'.$_SERVER['PHP_SELF'].'" METHOD="POST" ENCTYPE="multipart/form-data">';
-	echo '<TR><TD ALIGN="RIGHT"><B>Filename: </B></TD><TD><INPUT TYPE="HIDDEN" NAME="Filename" VALUE="'.FixTextFields($Filename).'"><A HREF="'.$browsescriptfilename.'?filename='.rawurlencode($Filename).'" TARGET="_blank">'.$Filename.'</A></TD></TR>';
+	echo '<a href="'.htmlentities($_SERVER['PHP_SELF'], ENT_QUOTES).'">Start Over</a><br><br>';
+	echo '<form action="'.htmlentities($_SERVER['PHP_SELF'], ENT_QUOTES).'" method="post" enctype="multipart/form-data">';
+	echo '<table border="3" cellspacing="0" cellpadding="4">';
+	echo '<tr><th align="right">Filename:</th><td><input type="hidden" name="Filename" value="'.htmlentities($Filename, ENT_QUOTES).'"><a href="'.htmlentities($browsescriptfilename.'?filename='.rawurlencode($Filename), ENT_QUOTES).'" target="_blank">'.$Filename.'</a></td></tr>';
 	if (file_exists($Filename)) {
 
 		// Initialize getID3 engine
@@ -144,7 +137,7 @@ if (!empty($Filename)) {
 				break;
 
 			case 'ogg':
-				if (@$OldThisFileInfo['audio']['dataformat'] == 'flac') {
+				if (!empty($OldThisFileInfo['audio']['dataformat']) && ($OldThisFileInfo['audio']['dataformat'] == 'flac')) {
 					//$ValidTagTypes = array('metaflac');
 					// metaflac doesn't (yet) work with OggFLAC files
 					$ValidTagTypes = array();
@@ -165,17 +158,17 @@ if (!empty($Filename)) {
 				$ValidTagTypes = array();
 				break;
 		}
-		echo '<TR><TD ALIGN="RIGHT"><B>Title</B></TD> <TD><INPUT TYPE="TEXT" SIZE="40" NAME="Title"  VALUE="'.FixTextFields(@implode(', ', @$OldThisFileInfo['comments']['title'])).'"></TD></TR>';
-		echo '<TR><TD ALIGN="RIGHT"><B>Artist</B></TD><TD><INPUT TYPE="TEXT" SIZE="40" NAME="Artist" VALUE="'.FixTextFields(@implode(', ', @$OldThisFileInfo['comments']['artist'])).'"></TD></TR>';
-		echo '<TR><TD ALIGN="RIGHT"><B>Album</B></TD> <TD><INPUT TYPE="TEXT" SIZE="40" NAME="Album"  VALUE="'.FixTextFields(@implode(', ', @$OldThisFileInfo['comments']['album'])).'"></TD></TR>';
-		echo '<TR><TD ALIGN="RIGHT"><B>Year</B></TD>  <TD><INPUT TYPE="TEXT" SIZE="4"  NAME="Year"   VALUE="'.FixTextFields(@implode(', ', @$OldThisFileInfo['comments']['year'])).'"></TD></TR>';
+		echo '<tr><td align="right"><b>Title</b></td> <td><input type="text" size="40" name="Title"  value="'.htmlentities((!empty($OldThisFileInfo['comments']['title'])  ? implode(', ', $OldThisFileInfo['comments']['title'] ) : ''), ENT_QUOTES).'"></td></tr>';
+		echo '<tr><td align="right"><b>Artist</b></td><td><input type="text" size="40" name="Artist" value="'.htmlentities((!empty($OldThisFileInfo['comments']['artist']) ? implode(', ', $OldThisFileInfo['comments']['artist']) : ''), ENT_QUOTES).'"></td></tr>';
+		echo '<tr><td align="right"><b>Album</b></td> <td><input type="text" size="40" name="Album"  value="'.htmlentities((!empty($OldThisFileInfo['comments']['album'])  ? implode(', ', $OldThisFileInfo['comments']['album'] ) : ''), ENT_QUOTES).'"></td></tr>';
+		echo '<tr><td align="right"><b>Year</b></td>  <td><input type="text" size="4"  name="Year"   value="'.htmlentities((!empty($OldThisFileInfo['comments']['year'])   ? implode(', ', $OldThisFileInfo['comments']['year']  ) : ''), ENT_QUOTES).'"></td></tr>';
 
 		$TracksTotal = '';
 		$TrackNumber = '';
-		if (!empty($OldThisFileInfo['comments']['tracknumber']) && is_array($OldThisFileInfo['comments']['tracknumber'])) {
-			$RawTrackNumberArray = $OldThisFileInfo['comments']['tracknumber'];
-		} elseif (!empty($OldThisFileInfo['comments']['track']) && is_array($OldThisFileInfo['comments']['track'])) {
-			$RawTrackNumberArray = $OldThisFileInfo['comments']['track'];
+		if (!empty($OldThisFileInfo['comments']['track_number']) && is_array($OldThisFileInfo['comments']['track_number'])) {
+			$RawTrackNumberArray = $OldThisFileInfo['comments']['track_number'];
+		} elseif (!empty($OldThisFileInfo['comments']['track_number']) && is_array($OldThisFileInfo['comments']['track_number'])) {
+			$RawTrackNumberArray = $OldThisFileInfo['comments']['track_number'];
 		} else {
 			$RawTrackNumberArray = array();
 		}
@@ -188,7 +181,7 @@ if (!empty($Filename)) {
 		if (strstr($TrackNumber, '/')) {
 			list($TrackNumber, $TracksTotal) = explode('/', $TrackNumber);
 		}
-		echo '<TR><TD ALIGN="RIGHT"><B>Track</B></TD><TD><INPUT TYPE="TEXT" SIZE="2"  NAME="Track"  VALUE="'.FixTextFields($TrackNumber).'"> of <INPUT TYPE="TEXT" SIZE="2" NAME="TracksTotal"  VALUE="'.FixTextFields($TracksTotal).'"></TD></TR>';
+		echo '<tr><td align="right"><b>Track</b></td><td><input type="text" size="2" name="Track" value="'.htmlentities($TrackNumber, ENT_QUOTES).'"> of <input type="text" size="2" name="TracksTotal" value="'.htmlentities($TracksTotal, ENT_QUOTES).'"></TD></TR>';
 
 		$ArrayOfGenresTemp = getid3_id3v1::ArrayOfGenres();   // get the array of genres
 		foreach ($ArrayOfGenresTemp as $key => $value) {      // change keys to match displayed value
@@ -202,70 +195,68 @@ if (!empty($Filename)) {
 		$ArrayOfGenres['Cover'] = '-Cover-';
 		$ArrayOfGenres['Remix'] = '-Remix-';
 		asort($ArrayOfGenres);                                // sort into alphabetical order
-		echo '<TR><TD ALIGN="RIGHT"><B>Genre</B></TD><TD><SELECT NAME="Genre">';
+		echo '<tr><th align="right">Genre</th><td><select name="Genre">';
 		$AllGenresArray = (!empty($OldThisFileInfo['comments']['genre']) ? $OldThisFileInfo['comments']['genre'] : array());
 		foreach ($ArrayOfGenres as $key => $value) {
-			echo '<OPTION VALUE="'.$key.'"';
+			echo '<option value="'.htmlentities($key, ENT_QUOTES).'"';
 			if (in_array($key, $AllGenresArray)) {
-				echo ' SELECTED';
+				echo ' selected="selected"';
 				unset($AllGenresArray[array_search($key, $AllGenresArray)]);
 				sort($AllGenresArray);
 			}
-			echo '>'.$value.'</OPTION>';
-			//echo '<OPTION VALUE="'.FixTextFields($value).'"'.((@$OldThisFileInfo['comments']['genre'][0] == $value) ? ' SELECTED' : '').'>'.$value.'</OPTION>';
+			echo '>'.htmlentities($value).'</option>';
 		}
-		echo '</SELECT><INPUT TYPE="TEXT" NAME="GenreOther" SIZE="10" VALUE="'.FixTextFields(@$AllGenresArray[0]).'"></TD></TR>';
+		echo '</select><input type="text" name="GenreOther" size="10" value="'.htmlentities((!empty($AllGenresArray[0]) ? $AllGenresArray[0] : ''), ENT_QUOTES).'"></td></tr>';
 
-		echo '<TR><TD ALIGN="RIGHT"><B>Write Tags</B></TD><TD>';
+		echo '<tr><td align="right"><b>Write Tags</b></td><td>';
 		foreach ($ValidTagTypes as $ValidTagType) {
-			echo '<INPUT TYPE="CHECKBOX" NAME="TagFormatsToWrite[]" VALUE="'.$ValidTagType.'"';
+			echo '<input type="checkbox" name="TagFormatsToWrite[]" value="'.$ValidTagType.'"';
 			if (count($ValidTagTypes) == 1) {
-				echo ' CHECKED';
+				echo ' checked="checked"';
 			} else {
 				switch ($ValidTagType) {
 					case 'id3v2.2':
 					case 'id3v2.3':
 					case 'id3v2.4':
 						if (isset($OldThisFileInfo['tags']['id3v2'])) {
-							echo ' CHECKED';
+							echo ' checked="checked"';
 						}
 						break;
 
 					default:
 						if (isset($OldThisFileInfo['tags'][$ValidTagType])) {
-							echo ' CHECKED';
+							echo ' checked="checked"';
 						}
 						break;
 				}
 			}
-			echo '>'.$ValidTagType.'<BR>';
+			echo '>'.$ValidTagType.'<br>';
 		}
 		if (count($ValidTagTypes) > 1) {
 			echo '<hr><input type="checkbox" name="remove_other_tags" value="1"> Remove non-selected tag formats when writing new tag<br>';
 		}
-		echo '</TD></TR>';
+		echo '</td></tr>';
 
-		echo '<TR><TD ALIGN="RIGHT"><B>Comment</B></TD><TD><TEXTAREA COLS="30" ROWS="3" NAME="Comment" WRAP="VIRTUAL">'.(isset($OldThisFileInfo['comments']['comment']) ? @implode("\n", $OldThisFileInfo['comments']['comment']) : '').'</TEXTAREA></TD></TR>';
+		echo '<tr><td align="right"><b>Comment</b></td><td><textarea cols="30" rows="3" name="Comment" wrap="virtual">'.((isset($OldThisFileInfo['comments']['comment']) && is_array($OldThisFileInfo['comments']['comment'])) ? implode("\n", $OldThisFileInfo['comments']['comment']) : '').'</textarea></td></tr>';
 
-		echo '<TR><TD ALIGN="RIGHT"><B>Picture</B><BR>(ID3v2 only)</TD><TD><INPUT TYPE="FILE" NAME="userfile" ACCEPT="image/jpeg, image/gif, image/png"><BR>';
-		echo '<SELECT NAME="APICpictureType">';
+		echo '<tr><td align="right"><b>Picture</b><br>(ID3v2 only)</td><td><input type="file" name="userfile" accept="image/jpeg, image/gif, image/png"><br>';
+		echo '<select name="APICpictureType">';
 		$APICtypes = getid3_id3v2::APICPictureTypeLookup('', true);
 		foreach ($APICtypes as $key => $value) {
-			echo '<OPTION VALUE="'.FixTextFields($key).'">'.FixTextFields($value).'</OPTION>';
+			echo '<option value="'.htmlentities($key, ENT_QUOTES).'">'.htmlentities($value).'</option>';
 		}
-		echo '</SELECT></TD></TR>';
-		echo '<TR><TD ALIGN="CENTER" COLSPAN="2"><INPUT TYPE="SUBMIT" NAME="WriteTags" VALUE="Save Changes"> ';
-		echo '<INPUT TYPE="RESET" VALUE="Reset"></TD></TR>';
+		echo '</select></td></tr>';
+		echo '<tr><td align="center" colspan="2"><input type="submit" name="WriteTags" value="Save Changes"> ';
+		echo '<input type="reset" value="Reset"></td></tr>';
 
 	} else {
 
-		echo '<TR><TD ALIGN="RIGHT"><B>Error</B></TD><TD>'.FixTextFields($Filename).' does not exist</TD></TR>';
+		echo '<tr><td align="right"><b>Error</b></td><td>'.htmlentities($Filename).' does not exist</td></tr>';
 
 	}
-	echo '</FORM></TABLE>';
+	echo '</table>';
+	echo '</form>';
 
 }
 
-?>
-</BODY>
-</HTML>
+echo '</body></html>';

@@ -82,8 +82,8 @@ include "../inc/dbconfig.php";
       <h1>Available Lectures</h1>
       
       <?php
-      $result = mysql_query("SELECT * FROM lectures ORDER BY name+0 ASC");
-      while($row = mysql_fetch_array($result)) {
+      $result = $mysqli->query("SELECT * FROM lectures ORDER BY name+0 ASC");
+      while($row = $result->fetch_array(MYSQLI_ASSOC)) {
         echo "
         <div style=\"margin-left: 90px;\">
           <div style=\"float: left; width: 90px; margin-left: -90px; font-size: 120%;\">

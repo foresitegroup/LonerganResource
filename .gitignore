@@ -47,6 +47,7 @@ admin/login.php
 audio/
 backup/
 pdf/
+inc/dbconfig.php
 
 admin/export-test.php
 admin/inc/PHPExcel.php

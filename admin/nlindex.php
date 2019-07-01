@@ -39,8 +39,8 @@ include "../inc/dbconfig.php";
     <h1>Newsletter Subscribers</h1>
     
     <?php
-    $result = mysql_query("SELECT * FROM newsletter ORDER BY email ASC");
-    while($row = mysql_fetch_array($result)) {
+    $result = $mysqli->query("SELECT * FROM newsletter ORDER BY email ASC");
+    while($row = $result->fetch_array(MYSQLI_ASSOC)) {
       echo "<a href=\"nledit.php?id=" . $row['id'] . "\">edit</a> | <a href=\"nldb.php?a=delete&id=" . $row['id'] . "\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\">delete</a> &nbsp; &nbsp; " . $row['email'] . "<br>\n";
     }
     ?>

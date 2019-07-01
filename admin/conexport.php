@@ -15,7 +15,7 @@ function PopulateSheet($objPHPExcel) {
 	ORDER BY conference.startdate DESC, contributors.datetime ASC;
 	";
 
-	$result = mysql_query($query);
+	$result = $mysqli->query($query);
 	$headings = array("Conference Title","Conference Location","Conference Start Date","Conference End Date","Conference Description","Contributor Name","Presentation Title","Presentation Abstract","File 1","File 2","File 3","File 4","File 5","File 6");
   $lastcol = "N";
 	
@@ -28,7 +28,7 @@ function PopulateSheet($objPHPExcel) {
 	
 	// Loop through the result set
 	$rowNumber = 2;
-	while ($row = mysql_fetch_row($result)) {
+	while ($row = $result->fetch_array(MYSQLI_ASSOC)) {
 		$col = 'A';
 		foreach($row as $cell) {
 			$objPHPExcel->getActiveSheet()->setCellValueExplicit($col.$rowNumber, $cell, PHPExcel_Cell_DataType::TYPE_STRING);

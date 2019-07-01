@@ -10,18 +10,18 @@ $search = trim($_REQUEST['search']);
 
 // Conferences and contributors...do contributors first
 $confs = array();
-$result = mysql_query("SELECT * FROM contributors WHERE title LIKE '%" . $search . "%' OR abstract LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM contributors WHERE title LIKE '%" . $search . "%' OR abstract LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     $confs[] = $row['conference'];
   }
 }
 
 // Now search conferences and merge with contributors results
 echo "<strong>Conferences</strong><br>\n";
-$result = mysql_query("SELECT * FROM conference WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM conference WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     $confs[] = $row['id'];
   }
   
@@ -30,8 +30,8 @@ if (mysql_num_rows($result) != 0) {
   
   // Do a query for each result and format output
   foreach ($conf as $con) {
-    $cresult = mysql_query("SELECT * FROM conference WHERE id = '" . $con . "'");
-    $crow = mysql_fetch_array($cresult);
+    $cresult = $mysqli->query("SELECT * FROM conference WHERE id = '" . $con . "'");
+    $crow = $cresult->fetch_array(MYSQLI_ASSOC);
     
     $datestr = date("M d", $crow['startdate']);
     if (($crow['enddate'] == "") || ($crow['enddate'] == $crow['startdate'])) {
@@ -49,9 +49,9 @@ if (mysql_num_rows($result) != 0) {
 
 // Courses
 echo "<br><strong>Courses</strong><br>\n";
-$result = mysql_query("SELECT * FROM courses WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM courses WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     echo "<a href=\"course.php?" . $row['id'] . "\">" . $row['name'] . ", " . $row['date'] . ", <em>" . $row['title'] . "</em></a><br>\n";
   }
 } else {
@@ -60,9 +60,9 @@ if (mysql_num_rows($result) != 0) {
 
 // Lectures
 echo "<br><strong>Lectures</strong><br>\n";
-$result = mysql_query("SELECT * FROM lectures WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM lectures WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     echo "<a href=\"lectures.php?" . $row['id'] . "\">" . $row['name'] . ", <em>" . $row['title'] . "</em></a><br>\n";
   }
 } else {
@@ -71,9 +71,9 @@ if (mysql_num_rows($result) != 0) {
 
 // Articles
 echo "<br><strong>Articles</strong><br>\n";
-$result = mysql_query("SELECT * FROM articles WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM articles WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     echo "<a href=\"articles.php?" . $row['id'] . "\">" . $row['name'] . ", <em>" . $row['title'] . "</em></a><br>\n";
   }
 } else {
@@ -82,9 +82,9 @@ if (mysql_num_rows($result) != 0) {
 
 // Books
 echo "<br><strong>Books</strong><br>\n";
-$result = mysql_query("SELECT * FROM books WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM books WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     echo "<a href=\"book.php?" . $row['id'] . "\">" . $row['name'] . ", <em>" . $row['title'] . "</em></a><br>\n";
   }
 } else {
@@ -93,9 +93,9 @@ if (mysql_num_rows($result) != 0) {
 
 // Dissertations
 echo "<br><strong>Dissertations</strong><br>\n";
-$result = mysql_query("SELECT * FROM dissertations WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
+$result = $mysqli->query("SELECT * FROM dissertations WHERE title LIKE '%" . $search . "%' OR description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     echo "<a href=\"dissertations.php?" . $row['name'] . ", <em>" . $row['title'] . "</em></a><br>\n";
   }
 } else {
@@ -104,14 +104,18 @@ if (mysql_num_rows($result) != 0) {
 
 // Journals
 echo "<br><strong>Journals</strong><br>\n";
-$result = mysql_query("SELECT * FROM journals WHERE description LIKE '%" . $search . "%'");
-if (mysql_num_rows($result) != 0) {
-  while($row = mysql_fetch_array($result)) {
-    //echo "<a href=\"journals.php?" . $row['name'] . ", <em>" . $row['title'] . "</em></a><br>\n";
+$result = $mysqli->query("SELECT * FROM journals WHERE description LIKE '%" . $search . "%'");
+if ($result->num_rows != 0) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
     $document = file_get_contents("pdf/journals/" . $row['file1']);
-    $pdfauthor = (preg_match_all("/\/Author\((.*?)\)/",$document,$match)) ? end(end($match)) : "";
-    $pdftitle = (preg_match_all("/\/Title\((.*?)\)/",$document,$match)) ? end(end($match)) : $row['file1'];
-    $pdf = ($pdfauthor != "" && $pdftitle != $row['file1']) ? $pdfauthor . ", <em>" . $pdftitle . "</em>" : "<em>" . $pdftitle . "</em>";
+    
+    preg_match_all("/\/Title\((.*?)\)/",$document,$tarr);
+    $tarr_last = end($tarr);
+    $pdftitle = end($tarr_last);
+    if ($pdftitle == "") $pdftitle = $row['file1'];
+
+    $pdf = "<em>" . $pdftitle . "</em>";
+
     echo "<a href=\"pdf/journals/" . $row['file1'] . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> " . $pdf . "</a><br>\n";
   }
 } else {

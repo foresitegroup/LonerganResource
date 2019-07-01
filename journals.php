@@ -15,7 +15,7 @@ We are grateful to Mark Morelli and Fred Lawrence for allowing us to upload thes
 
 <?php
 function Journals($result) {
-  while($row = mysql_fetch_array($result)) {
+  while($row = $result->fetch_array(MYSQLI_ASSOC)) {
   ?>
   
   <a href="javascript:toggle('<?php echo $row['id']; ?>')">
@@ -36,8 +36,12 @@ function Journals($result) {
     
     echo "<div style=\"padding-top: 5px;\">\n";
       $document = file_get_contents("pdf/journals/" . $row['file1'], true);
-      preg_match_all("/\/Title\((.*?)\)/",$document,$match);
-      $pdftitle = ($match[1][0] != "") ? $match[1][0] : $row['file1'];
+
+      preg_match_all("/\/Title\((.*?)\)/",$document,$tarr);
+      $tarr_last = end($tarr);
+      $pdftitle = end($tarr_last);
+      if ($pdftitle == "") $pdftitle = $row['file1'];
+
       $pdf = "<em>" . $pdftitle . "</em>";
       
       echo "<a href=\"pdf/journals/" . $row['file1'] . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> View " . $pdf . "</a><br>\n";
@@ -48,17 +52,17 @@ function Journals($result) {
   }
 }
 
-$result = mysql_query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '1' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
+$result = $mysqli->query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '1' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
 Journals($result); // Method
 
 echo "<br>\n";
 
-$result = mysql_query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '3' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
+$result = $mysqli->query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '3' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
 Journals($result); // Method n.s.
 
 echo "<br>\n";
 
-$result = mysql_query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '2' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
+$result = $mysqli->query("SELECT * FROM journaltitles,journals WHERE journals.titleid = '2' AND journaltitles.id = journals.titleid ORDER BY title, volume+0, number+0 ASC");
 Journals($result); // Lonergan Workshop
 ?>
 

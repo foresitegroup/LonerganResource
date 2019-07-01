@@ -10,7 +10,7 @@ switch ($_GET['a']) {
     break;
 }
 
-mysql_query($query);
+$mysqli->query($query);
 
-header( "Location: nlindex.php" );
+header("Location: nlindex.php");
 ?>

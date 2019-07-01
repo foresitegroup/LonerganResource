@@ -93,8 +93,8 @@ include "../inc/dbconfig.php";
         $TheB = "&b=" . $_GET['b'];
       }
       
-      $result = mysql_query("SELECT * FROM calendar WHERE date >= '$first_day' AND date <= '$last_day' ORDER BY date ASC");
-      while($row = mysql_fetch_array($result)) {
+      $result = $mysqli->query("SELECT * FROM calendar WHERE date >= '$first_day' AND date <= '$last_day' ORDER BY date ASC");
+      while($row = $result->fetch_array(MYSQLI_ASSOC)) {
         echo "<a href=\"caledit.php?id=" . $row['id'] . "$TheB\">edit</a> | 
         <a href=\"caldb.php?a=delete&id=" . $row['id'] . "$TheB\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\">delete</a> &nbsp; &nbsp; <strong>" . date("M d", $row['date']) . "</strong> " . $row['event'] . "<br>\n";
       }

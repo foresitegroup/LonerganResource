@@ -42,8 +42,8 @@ include "../inc/dbconfig.php";
     <h1>Edit Contributor</h1>
 
     <?php
-    $result = mysql_query("SELECT * FROM contributors WHERE id = '" . $_GET['id'] . "'");
-    $row = mysql_fetch_array($result);
+    $result = $mysqli->query("SELECT * FROM contributors WHERE id = '" . $_GET['id'] . "'");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
     ?>
 
     <form action="contribdb.php?a=edit" method="POST">
@@ -54,11 +54,11 @@ include "../inc/dbconfig.php";
           <select name="conference" style="width: 315px;">
             <option value="">Select...</option>
             <?php
-            $cresult = mysql_query("SELECT * FROM conference ORDER BY startdate ASC");
-            while($crow = mysql_fetch_array($cresult)) {
+            $cresult = $mysqli->query("SELECT * FROM conference ORDER BY startdate ASC");
+            while($crow = $cresult->fetch_array(MYSQLI_ASSOC)) {
               $cdatestr = date("M d", $crow['startdate']);
               if (($crow['enddate'] == "") || ($crow['enddate'] == $crow['startdate'])) {
-                $cdatestr .= ", " . date("Y", $row['cstartdate']);
+                $cdatestr .= ", " . date("Y", $crow['startdate']);
               } else {
                 if (date("Y", $crow['startdate']) != date("Y", $crow['enddate'])) { $cdatestr .= ", " . date("Y", $crow['startdate']); }
                 $cdatestr .= (date("M", $crow['startdate']) == date("M", $crow['enddate'])) ? "-" . date("d, Y", $crow['enddate']) : "-" . date("M d, Y", $crow['enddate']);

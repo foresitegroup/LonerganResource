@@ -61,11 +61,11 @@ include "../inc/dbconfig.php";
       <h1>Available Links</h1>
       
       <?php
-      $result = mysql_query("SELECT * FROM links ORDER BY sort+0 ASC");
+      $result = $mysqli->query("SELECT * FROM links ORDER BY sort+0 ASC");
       
       $rownum = 1;
       
-      while($row = mysql_fetch_array($result)) {
+      while($row = $result->fetch_array(MYSQLI_ASSOC)) {
         ?>
         <div style="margin: 0 0 10px 120px;">
           <div style="float: left; width: 120px; margin-left: -120px;">
@@ -75,7 +75,7 @@ include "../inc/dbconfig.php";
             <?php
             echo ($rownum != "1") ? "<a href=\"linksdb.php?id=" . $row['id'] . "&s=" . $row['sort'] . "&a=sort&d=u\"><img src=\"images/move-u.png\" alt=\"^\" title=\"Move up\"></a>" : "<img src=\"images/blank.gif\" alt=\"\" style=\"width: 12px; height: 10px;\">";
             echo "&nbsp;";
-            echo ($rownum != mysql_num_rows($result)) ? "<a href=\"linksdb.php?id=" . $row['id'] . "&s=" . $row['sort'] . "&a=sort&d=d\"><img src=\"images/move-d.png\" alt=\"v\" title=\"Move down\"></a>" : "<img src=\"images/blank.gif\" alt=\"\" style=\"width: 12px; height: 10px;\">";
+            echo ($rownum != $result->num_rows) ? "<a href=\"linksdb.php?id=" . $row['id'] . "&s=" . $row['sort'] . "&a=sort&d=d\"><img src=\"images/move-d.png\" alt=\"v\" title=\"Move down\"></a>" : "<img src=\"images/blank.gif\" alt=\"\" style=\"width: 12px; height: 10px;\">";
             ?>
             
           </div>

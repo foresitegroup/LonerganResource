@@ -43,8 +43,8 @@ include "../inc/dbconfig.php";
     <h1>Edit Journal</h1>
       
     <?php
-    $result = mysql_query("SELECT * FROM journals WHERE id = '" . $_GET['id'] . "'");
-    $row = mysql_fetch_array($result);
+    $result = $mysqli->query("SELECT * FROM journals WHERE id = '" . $_GET['id'] . "'");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
     ?>
     
     <form action="journaldb.php?a=edit" method="POST">
@@ -56,8 +56,8 @@ include "../inc/dbconfig.php";
         <select name="titleid" style="width: 345px;">
           <option value="">Select...</option>
           <?php
-          $tresult = mysql_query("SELECT * FROM journaltitles ORDER BY title ASC");
-          while($trow = mysql_fetch_array($tresult)) {
+          $tresult = $mysqli->query("SELECT * FROM journaltitles ORDER BY title ASC");
+          while($trow = $tresult->fetch_array(MYSQLI_ASSOC)) {
             echo "<option value=\"" . $trow['id'] . "\"";
             if ($trow['id'] == $row['titleid']) echo " selected";
             echo ">" . $trow['title'] . "</option>\n";

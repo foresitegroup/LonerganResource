@@ -1,4 +1,15 @@
 <?php
+/////////////////////////////////////////////////////////////////
+/// getID3() by James Heinrich <info@getid3.org>               //
+//  available at https://github.com/JamesHeinrich/getID3       //
+//            or https://www.getid3.org                        //
+//            or http://getid3.sourceforge.net                 //
+//                                                             //
+// /demo/demo.mp3header.php - part of getID3()                 //
+// Sample script for decoding MP3 header bytes                 //
+//  see readme.txt for more details                            //
+//                                                            ///
+/////////////////////////////////////////////////////////////////
 
 if (!function_exists('PrintHexBytes')) {
 	function PrintHexBytes($string) {
@@ -24,39 +35,15 @@ if (!function_exists('PrintTextBytes')) {
 	}
 }
 
-if (!function_exists('FixDBFields')) {
-	function FixDBFields($text) {
-		return mysql_escape_string($text);
-	}
-}
-
-if (!function_exists('FixTextFields')) {
-	function FixTextFields($text) {
-		$text = SafeStripSlashes($text);
-		$text = htmlentities($text, ENT_QUOTES);
-		return $text;
-	}
-}
-
-if (!function_exists('SafeStripSlashes')) {
-	function SafeStripSlashes($text) {
-		if (get_magic_quotes_gpc()) {
-			return stripslashes($text);
-		}
-		return $text;
-	}
-}
-
-
 if (!function_exists('table_var_dump')) {
 	function table_var_dump($variable) {
 		$returnstring = '';
 		switch (gettype($variable)) {
 			case 'array':
-				$returnstring .= '<TABLE BORDER="1" CELLSPACING="0" CELLPADDING="2">';
+				$returnstring .= '<table border="1" cellspacing="0" cellpadding="2">';
 				foreach ($variable as $key => $value) {
-					$returnstring .= '<TR><TD VALIGN="TOP"><B>'.str_replace(chr(0), ' ', $key).'</B></TD>';
-					$returnstring .= '<TD VALIGN="TOP">'.gettype($value);
+					$returnstring .= '<tr><td valign="top"><b>'.str_replace(chr(0), ' ', $key).'</b></td>';
+					$returnstring .= '<td valign="top">'.gettype($value);
 					if (is_array($value)) {
 						$returnstring .= '&nbsp;('.count($value).')';
 					} elseif (is_string($value)) {
@@ -65,18 +52,21 @@ if (!function_exists('table_var_dump')) {
 					if (($key == 'data') && isset($variable['image_mime']) && isset($variable['dataoffset'])) {
 						require_once(GETID3_INCLUDEPATH.'getid3.getimagesize.php');
 						$imageinfo = array();
-						$imagechunkcheck = GetDataImageSize($value, $imageinfo);
-						$DumpedImageSRC = (!empty($_REQUEST['filename']) ? $_REQUEST['filename'] : '.getid3').'.'.$variable['dataoffset'].'.'.ImageTypesLookup($imagechunkcheck[2]);
-						if ($tempimagefile = fopen($DumpedImageSRC, 'wb')) {
-							fwrite($tempimagefile, $value);
-							fclose($tempimagefile);
+						if ($imagechunkcheck = GetDataImageSize($value, $imageinfo)) {
+							$DumpedImageSRC = (!empty($_REQUEST['filename']) ? $_REQUEST['filename'] : '.getid3').'.'.$variable['dataoffset'].'.'.image_type_to_mime_type($imagechunkcheck[2]);
+							if ($tempimagefile = fopen($DumpedImageSRC, 'wb')) {
+								fwrite($tempimagefile, $value);
+								fclose($tempimagefile);
+							}
+							$returnstring .= '</td><td><img src="'.$DumpedImageSRC.'" width="'.$imagechunkcheck[0].'" height="'.$imagechunkcheck[1].'"></td></tr>';
+						} else {
+							$returnstring .= '</td><td><i>invalid image data</i></td></tr>';
 						}
-						$returnstring .= '</TD><TD><IMG SRC="'.$DumpedImageSRC.'" WIDTH="'.$imagechunkcheck[0].'" HEIGHT="'.$imagechunkcheck[1].'"></TD></TR>';
 					} else {
-						$returnstring .= '</TD><TD>'.table_var_dump($value).'</TD></TR>';
+						$returnstring .= '</td><td>'.table_var_dump($value).'</td></tr>';
 					}
 				}
-				$returnstring .= '</TABLE>';
+				$returnstring .= '</table>';
 				break;
 
 			case 'boolean':
@@ -98,7 +88,7 @@ if (!function_exists('table_var_dump')) {
 				$variable = str_replace(chr(0), ' ', $variable);
 				$varlen = strlen($variable);
 				for ($i = 0; $i < $varlen; $i++) {
-					if (ereg('['.chr(0x0A).chr(0x0D).' -;0-9A-Za-z]', $variable{$i})) {
+					if (preg_match('#['.chr(0x0A).chr(0x0D).' -;0-9A-Za-z]#', $variable{$i})) {
 						$returnstring .= $variable{$i};
 					} else {
 						$returnstring .= '&#'.str_pad(ord($variable{$i}), 3, '0', STR_PAD_LEFT).';';
@@ -110,14 +100,12 @@ if (!function_exists('table_var_dump')) {
 			default:
 				require_once(GETID3_INCLUDEPATH.'getid3.getimagesize.php');
 				$imageinfo = array();
-				$imagechunkcheck = GetDataImageSize(substr($variable, 0, FREAD_BUFFER_SIZE), $imageinfo);
-
-				if (($imagechunkcheck[2] >= 1) && ($imagechunkcheck[2] <= 3)) {
-					$returnstring .= '<TABLE BORDER="1" CELLSPACING="0" CELLPADDING="2">';
-					$returnstring .= '<TR><TD><B>type</B></TD><TD>'.ImageTypesLookup($imagechunkcheck[2]).'</TD></TR>';
-					$returnstring .= '<TR><TD><B>width</B></TD><TD>'.number_format($imagechunkcheck[0]).' px</TD></TR>';
-					$returnstring .= '<TR><TD><B>height</B></TD><TD>'.number_format($imagechunkcheck[1]).' px</TD></TR>';
-					$returnstring .= '<TR><TD><B>size</B></TD><TD>'.number_format(strlen($variable)).' bytes</TD></TR></TABLE>';
+				if (($imagechunkcheck = GetDataImageSize(substr($variable, 0, 32768), $imageinfo)) && ($imagechunkcheck[2] >= 1) && ($imagechunkcheck[2] <= 3)) {
+					$returnstring .= '<table border="1" cellspacing="0" cellpadding="2">';
+					$returnstring .= '<tr><td><b>type</b></td><td>'.image_type_to_mime_type($imagechunkcheck[2]).'</td></tr>';
+					$returnstring .= '<tr><td><b>width</b></td><td>'.number_format($imagechunkcheck[0]).' px</td></tr>';
+					$returnstring .= '<tr><td><b>height</b></td><td>'.number_format($imagechunkcheck[1]).' px</td></tr>';
+					$returnstring .= '<tr><td><b>size</b></td><td>'.number_format(strlen($variable)).' bytes</td></tr></table>';
 				} else {
 					$returnstring .= nl2br(htmlspecialchars(str_replace(chr(0), ' ', $variable)));
 				}
@@ -129,6 +117,9 @@ if (!function_exists('table_var_dump')) {
 
 if (!function_exists('string_var_dump')) {
 	function string_var_dump($variable) {
+		if (version_compare(PHP_VERSION, '4.3.0', '>=')) {
+			return print_r($variable, true);
+		}
 		ob_start();
 		var_dump($variable);
 		$dumpedvariable = ob_get_contents();
@@ -156,9 +147,9 @@ if (!function_exists('fileextension')) {
 
 if (!function_exists('RemoveAccents')) {
 	function RemoveAccents($string) {
-		// return strtr($string, 'ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ', 'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
+		// return strtr($string, 'ÂŠÂŒÂŽÂšÂœÂžÂŸÂ¥ÂµÃ€ÃÃ‚ÃƒÃ„Ã…Ã†Ã‡ÃˆÃ‰ÃŠÃ‹ÃŒÃÃŽÃÃÃ‘Ã’Ã“Ã”Ã•Ã–Ã˜Ã™ÃšÃ›ÃœÃÃŸÃ Ã¡Ã¢Ã£Ã¤Ã¥Ã¦Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã°Ã±Ã²Ã³Ã´ÃµÃ¶Ã¸Ã¹ÃºÃ»Ã¼Ã½Ã¿', 'SOZsozYYuAAAAAAACEEEEIIIIDNOOOOOOUUUUYsaaaaaaaceeeeiiiionoooooouuuuyy');
 		// Revised version by marksteward@hotmail.com
-		return strtr(strtr($string, 'ŠŽšžŸÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝàáâãäåçèéêëìíîïñòóôõöøùúûüýÿ', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy'), array('Þ' => 'TH', 'þ' => 'th', 'Ð' => 'DH', 'ð' => 'dh', 'ß' => 'ss', 'Œ' => 'OE', 'œ' => 'oe', 'Æ' => 'AE', 'æ' => 'ae', 'µ' => 'u'));
+		return strtr(strtr($string, 'ÂŠÂŽÂšÂžÂŸÃ€ÃÃ‚ÃƒÃ„Ã…Ã‡ÃˆÃ‰ÃŠÃ‹ÃŒÃÃŽÃÃ‘Ã’Ã“Ã”Ã•Ã–Ã˜Ã™ÃšÃ›ÃœÃÃ Ã¡Ã¢Ã£Ã¤Ã¥Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã±Ã²Ã³Ã´ÃµÃ¶Ã¸Ã¹ÃºÃ»Ã¼Ã½Ã¿', 'SZszYAAAAAACEEEEIIIINOOOOOOUUUUYaaaaaaceeeeiiiinoooooouuuuyy'), array('Ãž' => 'TH', 'Ã¾' => 'th', 'Ã' => 'DH', 'Ã°' => 'dh', 'ÃŸ' => 'ss', 'ÂŒ' => 'OE', 'Âœ' => 'oe', 'Ã†' => 'AE', 'Ã¦' => 'ae', 'Âµ' => 'u'));
 	}
 }
 
@@ -614,7 +605,9 @@ if (!function_exists('array_join_merge')) {
 				// hashes -> merge based on keys
 				$keys = array_merge(array_keys($arr1), array_keys($arr2));
 				foreach ($keys as $key) {
-					$new_array[$key] = array_join_merge(@$arr1[$key], @$arr2[$key]);
+					$arr1[$key] = (isset($arr1[$key]) ? $arr1[$key] : '');
+					$arr2[$key] = (isset($arr2[$key]) ? $arr2[$key] : '');
+					$new_array[$key] = array_join_merge($arr1[$key], $arr2[$key]);
 				}
 			} else {
 				// two real arrays -> merge
@@ -789,8 +782,8 @@ if (!function_exists('ID3v1matchesID3v2')) {
 		if (trim($id3v1['genre']) != trim($id3v2['genre'])) {
 			return false;
 		}
-		if (isset($id3v1['track'])) {
-			if (!isset($id3v1['track']) || (trim($id3v1['track']) != trim($id3v2['track']))) {
+		if (isset($id3v1['track_number'])) {
+			if (!isset($id3v1['track_number']) || (trim($id3v1['track_number']) != trim($id3v2['track_number']))) {
 				return false;
 			}
 			if (trim($id3v1['comment']) != trim(substr($id3v2['comment'], 0, 28))) {
@@ -1097,7 +1090,7 @@ if (!function_exists('md5_file')) {
 		}
 
 		$file = str_replace('`', '\\`', $file);
-		if (ereg("^([0-9a-f]{32})[ \t\n\r]", `md5sum "$file"`, $r)) {
+		if (preg_match("#^([0-9a-f]{32})[ \t\n\r]#i", `md5sum "$file"`, $r)) {
 			return $r[1];
 		}
 		return false;
@@ -1110,11 +1103,11 @@ if (!function_exists('md5_data')) {
 
 	function md5_data($file, $offset, $end, $invertsign=false) {
 		// first try and create a temporary file in the same directory as the file being scanned
-		if (($dataMD5filename = tempnam(dirname($file), eregi_replace('[^[:alnum:]]', '', basename($file)))) === false) {
+		if (($dataMD5filename = tempnam(dirname($file), preg_replace('#[^[:alnum:]]#i', '', basename($file)))) === false) {
 			// if that fails, create a temporary file in the system temp directory
 			if (($dataMD5filename = tempnam('/tmp', 'getID3')) === false) {
 				// if that fails, create a temporary file in the current directory
-				if (($dataMD5filename = tempnam('.', eregi_replace('[^[:alnum:]]', '', basename($file)))) === false) {
+				if (($dataMD5filename = tempnam('.', preg_replace('#[^[:alnum:]]#i', '', basename($file)))) === false) {
 					// can't find anywhere to create a temp file, just die
 					return false;
 				}
@@ -1124,14 +1117,18 @@ if (!function_exists('md5_data')) {
 		set_time_limit(max(filesize($file) / 1000000, 30));
 
 		// copy parts of file
-		if ($fp = @fopen($file, 'rb')) {
+		ob_start();
+		if ($fp = fopen($file, 'rb')) {
+			ob_end_clean();
 
-			if ($MD5fp = @fopen($dataMD5filename, 'wb')) {
+			ob_start();
+			if ($MD5fp = fopen($dataMD5filename, 'wb')) {
 
+				ob_end_clean();
 				if ($invertsign) {
 					// Load conversion lookup strings for 8-bit unsigned->signed conversion below
-	                $from = '';
-	                $to   = '';
+					$from = '';
+					$to   = '';
 					for ($i = 0; $i < 128; $i++) {
 						$from .= chr($i);
 						$to   .= chr($i + 128);
@@ -1144,7 +1141,7 @@ if (!function_exists('md5_data')) {
 
 				fseek($fp, $offset, SEEK_SET);
 				$byteslefttowrite = $end - $offset;
-				while (($byteslefttowrite > 0) && ($buffer = fread($fp, FREAD_BUFFER_SIZE))) {
+				while (($byteslefttowrite > 0) && ($buffer = fread($fp, 32768))) {
 					if ($invertsign) {
 						// Possibly FLAC-specific (?)
 						// FLAC calculates the MD5sum of the source data of 8-bit files
@@ -1164,9 +1161,15 @@ if (!function_exists('md5_data')) {
 				fclose($MD5fp);
 				$md5 = md5_file($dataMD5filename);
 
+			} else {
+				$errormessage = ob_get_contents();
+				ob_end_clean();
 			}
 			fclose($fp);
 
+		} else {
+			$errormessage = ob_get_contents();
+			ob_end_clean();
 		}
 		unlink($dataMD5filename);
 		return $md5;
@@ -1283,65 +1286,68 @@ if (!function_exists('CalculateCompressionRatioAudio')) {
 
 if (!function_exists('IsValidMIMEstring')) {
 	function IsValidMIMEstring($mimestring) {
-	    if ((strlen($mimestring) >= 3) && (strpos($mimestring, '/') > 0) && (strpos($mimestring, '/') < (strlen($mimestring) - 1))) {
+		if ((strlen($mimestring) >= 3) && (strpos($mimestring, '/') > 0) && (strpos($mimestring, '/') < (strlen($mimestring) - 1))) {
 			return true;
-	    }
-	    return false;
+		}
+		return false;
 	}
 }
 
 if (!function_exists('IsWithinBitRange')) {
 	function IsWithinBitRange($number, $maxbits, $signed=false) {
-	    if ($signed) {
+		if ($signed) {
 			if (($number > (0 - pow(2, $maxbits - 1))) && ($number <= pow(2, $maxbits - 1))) {
 				return true;
 			}
-	    } else {
+		} else {
 			if (($number >= 0) && ($number <= pow(2, $maxbits))) {
 				return true;
 			}
-	    }
-	    return false;
+		}
+		return false;
 	}
 }
 
 if (!function_exists('safe_parse_url')) {
 	function safe_parse_url($url) {
-	    $parts = @parse_url($url);
-	    $parts['scheme'] = (isset($parts['scheme']) ? $parts['scheme'] : '');
-	    $parts['host']   = (isset($parts['host'])   ? $parts['host']   : '');
-	    $parts['user']   = (isset($parts['user'])   ? $parts['user']   : '');
-	    $parts['pass']   = (isset($parts['pass'])   ? $parts['pass']   : '');
-	    $parts['path']   = (isset($parts['path'])   ? $parts['path']   : '');
-	    $parts['query']  = (isset($parts['query'])  ? $parts['query']  : '');
-	    return $parts;
+		ob_start();
+		$parts = parse_url($url);
+		$errormessage = ob_get_contents();
+		ob_end_clean();
+		$parts['scheme'] = (isset($parts['scheme']) ? $parts['scheme'] : '');
+		$parts['host']   = (isset($parts['host'])   ? $parts['host']   : '');
+		$parts['user']   = (isset($parts['user'])   ? $parts['user']   : '');
+		$parts['pass']   = (isset($parts['pass'])   ? $parts['pass']   : '');
+		$parts['path']   = (isset($parts['path'])   ? $parts['path']   : '');
+		$parts['query']  = (isset($parts['query'])  ? $parts['query']  : '');
+		return $parts;
 	}
 }
 
 if (!function_exists('IsValidURL')) {
 	function IsValidURL($url, $allowUserPass=false) {
-	    if ($url == '') {
+		if ($url == '') {
 			return false;
-	    }
-	    if ($allowUserPass !== true) {
+		}
+		if ($allowUserPass !== true) {
 			if (strstr($url, '@')) {
 				// in the format http://user:pass@example.com  or http://user@example.com
 				// but could easily be somebody incorrectly entering an email address in place of a URL
 				return false;
 			}
-	    }
-	    if ($parts = safe_parse_url($url)) {
+		}
+		if ($parts = safe_parse_url($url)) {
 			if (($parts['scheme'] != 'http') && ($parts['scheme'] != 'https') && ($parts['scheme'] != 'ftp') && ($parts['scheme'] != 'gopher')) {
 				return false;
-			} elseif (!eregi("^[[:alnum:]]([-.]?[0-9a-z])*\.[a-z]{2,3}$", $parts['host'], $regs) && !IsValidDottedIP($parts['host'])) {
+			} elseif (!preg_match("#^[[:alnum:]]([-.]?[0-9a-z])*\.[a-z]{2,3}#i$", $parts['host'], $regs) && !preg_match('#^[0-9]{1,3}(\.[0-9]{1,3}){3}$#', $parts['host'])) {
 				return false;
-			} elseif (!eregi("^([[:alnum:]-]|[\_])*$", $parts['user'], $regs)) {
+			} elseif (!preg_match("#^([[:alnum:]-]|[\_])*$#i", $parts['user'], $regs)) {
 				return false;
-			} elseif (!eregi("^([[:alnum:]-]|[\_])*$", $parts['pass'], $regs)) {
+			} elseif (!preg_match("#^([[:alnum:]-]|[\_])*$#i", $parts['pass'], $regs)) {
 				return false;
-			} elseif (!eregi("^[[:alnum:]/_\.@~-]*$", $parts['path'], $regs)) {
+			} elseif (!preg_match("#^[[:alnum:]/_\.@~-]*$#i", $parts['path'], $regs)) {
 				return false;
-			} elseif (!eregi("^[[:alnum:]?&=+:;_()%#/,\.-]*$", $parts['query'], $regs)) {
+			} elseif (!preg_match("#^[[:alnum:]?&=+:;_()%#/,\.-]*$#i", $parts['query'], $regs)) {
 				return false;
 			} else {
 				return true;
@@ -1351,63 +1357,63 @@ if (!function_exists('IsValidURL')) {
 	}
 }
 
-echo '<FORM ACTION="'.$_SERVER['PHP_SELF'].'" METHOD="POST">';
+echo '<form action="'.htmlentities($_SERVER['PHP_SELF'], ENT_QUOTES).'" method="get">';
 echo 'Enter 4 hex bytes of MPEG-audio header (ie <I>FF FA 92 44</I>)<BR>';
-echo '<INPUT TYPE="TEXT" NAME="HeaderHexBytes" VALUE="'.(isset($_POST['HeaderHexBytes']) ? strtoupper($_POST['HeaderHexBytes']) : '').'" SIZE="11" MAXLENGTH="11">';
-echo '<INPUT TYPE="SUBMIT" NAME="Analyze" VALUE="Analyze"></FORM>';
-echo '<HR>';
+echo '<input type="text" name="HeaderHexBytes" value="'.htmlentities(isset($_POST['HeaderHexBytes']) ? strtoupper($_POST['HeaderHexBytes']) : '', ENT_QUOTES).'" size="11" maxlength="11">';
+echo '<input type="submit" name="Analyze" value="Analyze"></form>';
+echo '<hr>';
 
-echo '<FORM ACTION="'.$_SERVER['PHP_SELF'].'" METHOD="POST">';
+echo '<form action="'.htmlentities($_SERVER['PHP_SELF'], ENT_QUOTES).'" method="get">';
 echo 'Generate a MPEG-audio 4-byte header from these values:<BR>';
-echo '<TABLE BORDER="0">';
+echo '<table border="0">';
 
 $MPEGgenerateValues = array(
-								'version'=>array('1', '2', '2.5'),
-								'layer'=>array('I', 'II', 'III'),
-								'protection'=>array('Y', 'N'),
-								'bitrate'=>array('free', '8', '16', '24', '32', '40', '48', '56', '64', '80', '96', '112', '128', '144', '160', '176', '192', '224', '256', '288', '320', '352', '384', '416', '448'),
-								'frequency'=>array('8000', '11025', '12000', '16000', '22050', '24000', '32000', '44100', '48000'),
-								'padding'=>array('Y', 'N'),
-								'private'=>array('Y', 'N'),
-								'channelmode'=>array('stereo', 'joint stereo', 'dual channel', 'mono'),
-								'modeextension'=>array('none', 'IS', 'MS', 'IS+MS', '4-31', '8-31', '12-31', '16-31'),
-								'copyright'=>array('Y', 'N'),
-								'original'=>array('Y', 'N'),
-								'emphasis'=>array('none', '50/15ms', 'CCIT J.17')
-							);
+	'version'       => array('1', '2', '2.5'),
+	'layer'         => array('I', 'II', 'III'),
+	'protection'    => array('Y', 'N'),
+	'bitrate'       => array('free', '8', '16', '24', '32', '40', '48', '56', '64', '80', '96', '112', '128', '144', '160', '176', '192', '224', '256', '288', '320', '352', '384', '416', '448'),
+	'frequency'     => array('8000', '11025', '12000', '16000', '22050', '24000', '32000', '44100', '48000'),
+	'padding'       => array('Y', 'N'),
+	'private'       => array('Y', 'N'),
+	'channelmode'   => array('stereo', 'joint stereo', 'dual channel', 'mono'),
+	'modeextension' => array('none', 'IS', 'MS', 'IS+MS', '4-31', '8-31', '12-31', '16-31'),
+	'copyright'     => array('Y', 'N'),
+	'original'      => array('Y', 'N'),
+	'emphasis'      => array('none', '50/15ms', 'CCIT J.17'),
+);
 
 foreach ($MPEGgenerateValues as $name => $dataarray) {
-    echo '<TR><TH>'.$name.':</TH><TD><SELECT NAME="'.$name.'">';
-    foreach ($dataarray as $key => $value) {
-		echo '<OPTION'.((isset($_POST["$name"]) && ($_POST["$name"] == $value)) ? ' SELECTED' : '').'>'.$value.'</OPTION>';
-    }
-    echo '</SELECT></TD></TR>';
+	echo '<tr><th>'.$name.':</th><td><select name="'.$name.'">';
+	foreach ($dataarray as $key => $value) {
+		echo '<option'.((isset($_POST["$name"]) && ($_POST["$name"] == $value)) ? ' SELECTED' : '').'>'.$value.'</option>';
+	}
+	echo '</select></td></tr>';
 }
 
 if (isset($_POST['bitrate'])) {
-	echo '<TR><TH>Frame Length:</TH><TD>'.(int) MPEGaudioFrameLength($_POST['bitrate'], $_POST['version'], $_POST['layer'], (($_POST['padding'] == 'Y') ? '1' : '0'), $_POST['frequency']).'</TD></TR>';
+	echo '<tr><th>Frame Length:</th><td>'.(int) MPEGaudioFrameLength($_POST['bitrate'], $_POST['version'], $_POST['layer'], (($_POST['padding'] == 'Y') ? '1' : '0'), $_POST['frequency']).'</td></tr>';
 }
-echo '</TABLE>';
-echo '<INPUT TYPE="SUBMIT" NAME="Generate" VALUE="Generate"></FORM>';
-echo '<HR>';
+echo '</table>';
+echo '<input type="submit" name="Generate" value="Generate"></form>';
+echo '<hr>';
 
 
 if (isset($_POST['Analyze']) && $_POST['HeaderHexBytes']) {
 
-    $headerbytearray = explode(' ', $_POST['HeaderHexBytes']);
-    if (count($headerbytearray) != 4) {
+	$headerbytearray = explode(' ', $_POST['HeaderHexBytes']);
+	if (count($headerbytearray) != 4) {
 		die('Invalid byte pattern');
-    }
-    $headerstring = '';
-    foreach ($headerbytearray as $textbyte) {
+	}
+	$headerstring = '';
+	foreach ($headerbytearray as $textbyte) {
 		$headerstring .= chr(hexdec($textbyte));
-    }
+	}
 
-    $MP3fileInfo['error'] = '';
+	$MP3fileInfo['error'] = '';
 
-    $MPEGheaderRawArray = MPEGaudioHeaderDecode(substr($headerstring, 0, 4));
+	$MPEGheaderRawArray = MPEGaudioHeaderDecode(substr($headerstring, 0, 4));
 
-    if (MPEGaudioHeaderValid($MPEGheaderRawArray, true)) {
+	if (MPEGaudioHeaderValid($MPEGheaderRawArray, true)) {
 
 		$MP3fileInfo['raw'] = $MPEGheaderRawArray;
 
@@ -1436,89 +1442,89 @@ if (isset($_POST['Analyze']) && $_POST['HeaderHexBytes']) {
 			$MP3fileInfo['bitrate'] *= 1000;
 		}
 
-    } else {
+	} else {
 
 		$MP3fileInfo['error'] .= "\n".'Invalid MPEG audio header';
 
-    }
+	}
 
-    if (!$MP3fileInfo['error']) {
+	if (!$MP3fileInfo['error']) {
 		unset($MP3fileInfo['error']);
-    }
+	}
 
-    echo table_var_dump($MP3fileInfo);
+	echo table_var_dump($MP3fileInfo);
 
 } elseif (isset($_POST['Generate'])) {
 
-    // AAAA AAAA  AAAB BCCD  EEEE FFGH  IIJJ KLMM
+	// AAAA AAAA  AAAB BCCD  EEEE FFGH  IIJJ KLMM
 
-    $headerbitstream  = '11111111111';                               // A - Frame sync (all bits set)
+	$headerbitstream  = '11111111111';                               // A - Frame sync (all bits set)
 
-    $MPEGversionLookup = array('2.5'=>'00', '2'=>'10', '1'=>'11');
-    $headerbitstream .= $MPEGversionLookup[$_POST['version']];       // B - MPEG Audio version ID
+	$MPEGversionLookup = array('2.5'=>'00', '2'=>'10', '1'=>'11');
+	$headerbitstream .= $MPEGversionLookup[$_POST['version']];       // B - MPEG Audio version ID
 
-    $MPEGlayerLookup = array('III'=>'01', 'II'=>'10', 'I'=>'11');
-    $headerbitstream .= $MPEGlayerLookup[$_POST['layer']];           // C - Layer description
+	$MPEGlayerLookup = array('III'=>'01', 'II'=>'10', 'I'=>'11');
+	$headerbitstream .= $MPEGlayerLookup[$_POST['layer']];           // C - Layer description
 
-    $headerbitstream .= (($_POST['protection'] == 'Y') ? '0' : '1'); // D - Protection bit
+	$headerbitstream .= (($_POST['protection'] == 'Y') ? '0' : '1'); // D - Protection bit
 
-    $MPEGaudioBitrateLookup['1']['I']     = array('free'=>'0000', '32'=>'0001', '64'=>'0010', '96'=>'0011', '128'=>'0100', '160'=>'0101', '192'=>'0110', '224'=>'0111', '256'=>'1000', '288'=>'1001', '320'=>'1010', '352'=>'1011', '384'=>'1100', '416'=>'1101', '448'=>'1110');
-    $MPEGaudioBitrateLookup['1']['II']    = array('free'=>'0000', '32'=>'0001', '48'=>'0010', '56'=>'0011',  '64'=>'0100',  '80'=>'0101',  '96'=>'0110', '112'=>'0111', '128'=>'1000', '160'=>'1001', '192'=>'1010', '224'=>'1011', '256'=>'1100', '320'=>'1101', '384'=>'1110');
-    $MPEGaudioBitrateLookup['1']['III']   = array('free'=>'0000', '32'=>'0001', '40'=>'0010', '48'=>'0011',  '56'=>'0100',  '64'=>'0101',  '80'=>'0110',  '96'=>'0111', '112'=>'1000', '128'=>'1001', '160'=>'1010', '192'=>'1011', '224'=>'1100', '256'=>'1101', '320'=>'1110');
-    $MPEGaudioBitrateLookup['2']['I']     = array('free'=>'0000', '32'=>'0001', '48'=>'0010', '56'=>'0011',  '64'=>'0100',  '80'=>'0101',  '96'=>'0110', '112'=>'0111', '128'=>'1000', '144'=>'1001', '160'=>'1010', '176'=>'1011', '192'=>'1100', '224'=>'1101', '256'=>'1110');
-    $MPEGaudioBitrateLookup['2']['II']    = array('free'=>'0000',  '8'=>'0001', '16'=>'0010', '24'=>'0011',  '32'=>'0100',  '40'=>'0101',  '48'=>'0110',  '56'=>'0111',  '64'=>'1000',  '80'=>'1001',  '96'=>'1010', '112'=>'1011', '128'=>'1100', '144'=>'1101', '160'=>'1110');
-    $MPEGaudioBitrateLookup['2']['III']   = $MPEGaudioBitrateLookup['2']['II'];
-    $MPEGaudioBitrateLookup['2.5']['I']   = $MPEGaudioBitrateLookup['2']['I'];
-    $MPEGaudioBitrateLookup['2.5']['II']  = $MPEGaudioBitrateLookup['2']['II'];
-    $MPEGaudioBitrateLookup['2.5']['III'] = $MPEGaudioBitrateLookup['2']['II'];
-    if (isset($MPEGaudioBitrateLookup[$_POST['version']][$_POST['layer']][$_POST['bitrate']])) {
+	$MPEGaudioBitrateLookup['1']['I']     = array('free'=>'0000', '32'=>'0001', '64'=>'0010', '96'=>'0011', '128'=>'0100', '160'=>'0101', '192'=>'0110', '224'=>'0111', '256'=>'1000', '288'=>'1001', '320'=>'1010', '352'=>'1011', '384'=>'1100', '416'=>'1101', '448'=>'1110');
+	$MPEGaudioBitrateLookup['1']['II']    = array('free'=>'0000', '32'=>'0001', '48'=>'0010', '56'=>'0011',  '64'=>'0100',  '80'=>'0101',  '96'=>'0110', '112'=>'0111', '128'=>'1000', '160'=>'1001', '192'=>'1010', '224'=>'1011', '256'=>'1100', '320'=>'1101', '384'=>'1110');
+	$MPEGaudioBitrateLookup['1']['III']   = array('free'=>'0000', '32'=>'0001', '40'=>'0010', '48'=>'0011',  '56'=>'0100',  '64'=>'0101',  '80'=>'0110',  '96'=>'0111', '112'=>'1000', '128'=>'1001', '160'=>'1010', '192'=>'1011', '224'=>'1100', '256'=>'1101', '320'=>'1110');
+	$MPEGaudioBitrateLookup['2']['I']     = array('free'=>'0000', '32'=>'0001', '48'=>'0010', '56'=>'0011',  '64'=>'0100',  '80'=>'0101',  '96'=>'0110', '112'=>'0111', '128'=>'1000', '144'=>'1001', '160'=>'1010', '176'=>'1011', '192'=>'1100', '224'=>'1101', '256'=>'1110');
+	$MPEGaudioBitrateLookup['2']['II']    = array('free'=>'0000',  '8'=>'0001', '16'=>'0010', '24'=>'0011',  '32'=>'0100',  '40'=>'0101',  '48'=>'0110',  '56'=>'0111',  '64'=>'1000',  '80'=>'1001',  '96'=>'1010', '112'=>'1011', '128'=>'1100', '144'=>'1101', '160'=>'1110');
+	$MPEGaudioBitrateLookup['2']['III']   = $MPEGaudioBitrateLookup['2']['II'];
+	$MPEGaudioBitrateLookup['2.5']['I']   = $MPEGaudioBitrateLookup['2']['I'];
+	$MPEGaudioBitrateLookup['2.5']['II']  = $MPEGaudioBitrateLookup['2']['II'];
+	$MPEGaudioBitrateLookup['2.5']['III'] = $MPEGaudioBitrateLookup['2']['II'];
+	if (isset($MPEGaudioBitrateLookup[$_POST['version']][$_POST['layer']][$_POST['bitrate']])) {
 		$headerbitstream .= $MPEGaudioBitrateLookup[$_POST['version']][$_POST['layer']][$_POST['bitrate']]; // E - Bitrate index
-    } else {
+	} else {
 		die('Invalid <B>Bitrate</B>');
-    }
+	}
 
-    $MPEGaudioFrequencyLookup['1']   = array('44100'=>'00', '48000'=>'01', '32000'=>'10');
-    $MPEGaudioFrequencyLookup['2']   = array('22050'=>'00', '24000'=>'01', '16000'=>'10');
-    $MPEGaudioFrequencyLookup['2.5'] = array('11025'=>'00', '12000'=>'01', '8000'=>'10');
-    if (isset($MPEGaudioFrequencyLookup[$_POST['version']][$_POST['frequency']])) {
+	$MPEGaudioFrequencyLookup['1']   = array('44100'=>'00', '48000'=>'01', '32000'=>'10');
+	$MPEGaudioFrequencyLookup['2']   = array('22050'=>'00', '24000'=>'01', '16000'=>'10');
+	$MPEGaudioFrequencyLookup['2.5'] = array('11025'=>'00', '12000'=>'01', '8000'=>'10');
+	if (isset($MPEGaudioFrequencyLookup[$_POST['version']][$_POST['frequency']])) {
 		$headerbitstream .= $MPEGaudioFrequencyLookup[$_POST['version']][$_POST['frequency']];  // F - Sampling rate frequency index
-    } else {
+	} else {
 		die('Invalid <B>Frequency</B>');
-    }
+	}
 
-    $headerbitstream .= (($_POST['padding'] == 'Y') ? '1' : '0');            // G - Padding bit
+	$headerbitstream .= (($_POST['padding'] == 'Y') ? '1' : '0');            // G - Padding bit
 
-    $headerbitstream .= (($_POST['private'] == 'Y') ? '1' : '0');            // H - Private bit
+	$headerbitstream .= (($_POST['private'] == 'Y') ? '1' : '0');            // H - Private bit
 
-    $MPEGaudioChannelModeLookup = array('stereo'=>'00', 'joint stereo'=>'01', 'dual channel'=>'10', 'mono'=>'11');
-    $headerbitstream .= $MPEGaudioChannelModeLookup[$_POST['channelmode']];  // I - Channel Mode
+	$MPEGaudioChannelModeLookup = array('stereo'=>'00', 'joint stereo'=>'01', 'dual channel'=>'10', 'mono'=>'11');
+	$headerbitstream .= $MPEGaudioChannelModeLookup[$_POST['channelmode']];  // I - Channel Mode
 
-    $MPEGaudioModeExtensionLookup['I']   = array('4-31'=>'00', '8-31'=>'01', '12-31'=>'10', '16-31'=>'11');
-    $MPEGaudioModeExtensionLookup['II']  = $MPEGaudioModeExtensionLookup['I'];
-    $MPEGaudioModeExtensionLookup['III'] = array('none'=>'00',   'IS'=>'01',    'MS'=>'10', 'IS+MS'=>'11');
-    if ($_POST['channelmode'] != 'joint stereo') {
+	$MPEGaudioModeExtensionLookup['I']   = array('4-31'=>'00', '8-31'=>'01', '12-31'=>'10', '16-31'=>'11');
+	$MPEGaudioModeExtensionLookup['II']  = $MPEGaudioModeExtensionLookup['I'];
+	$MPEGaudioModeExtensionLookup['III'] = array('none'=>'00',   'IS'=>'01',    'MS'=>'10', 'IS+MS'=>'11');
+	if ($_POST['channelmode'] != 'joint stereo') {
 		$headerbitstream .= '00';
-    } elseif (isset($MPEGaudioModeExtensionLookup[$_POST['layer']][$_POST['modeextension']])) {
+	} elseif (isset($MPEGaudioModeExtensionLookup[$_POST['layer']][$_POST['modeextension']])) {
 		$headerbitstream .= $MPEGaudioModeExtensionLookup[$_POST['layer']][$_POST['modeextension']];  // J - Mode extension (Only if Joint stereo)
-    } else {
+	} else {
 		die('Invalid <B>Mode Extension</B>');
-    }
+	}
 
-    $headerbitstream .= (($_POST['copyright'] == 'Y') ? '1' : '0');          // K - Copyright
+	$headerbitstream .= (($_POST['copyright'] == 'Y') ? '1' : '0');          // K - Copyright
 
-    $headerbitstream .= (($_POST['original']  == 'Y') ? '1' : '0');          // L - Original
+	$headerbitstream .= (($_POST['original']  == 'Y') ? '1' : '0');          // L - Original
 
-    $MPEGaudioEmphasisLookup = array('none'=>'00', '50/15ms'=>'01', 'CCIT J.17'=>'11');
-    if (isset($MPEGaudioEmphasisLookup[$_POST['emphasis']])) {
+	$MPEGaudioEmphasisLookup = array('none'=>'00', '50/15ms'=>'01', 'CCIT J.17'=>'11');
+	if (isset($MPEGaudioEmphasisLookup[$_POST['emphasis']])) {
 		$headerbitstream .= $MPEGaudioEmphasisLookup[$_POST['emphasis']];    // M - Emphasis
-    } else {
+	} else {
 		die('Invalid <B>Emphasis</B>');
-    }
+	}
 
-    echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream,  0, 8))), 2, '0', STR_PAD_LEFT)).' ';
-    echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream,  8, 8))), 2, '0', STR_PAD_LEFT)).' ';
-    echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream, 16, 8))), 2, '0', STR_PAD_LEFT)).' ';
-    echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream, 24, 8))), 2, '0', STR_PAD_LEFT)).'<BR>';
+	echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream,  0, 8))), 2, '0', STR_PAD_LEFT)).' ';
+	echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream,  8, 8))), 2, '0', STR_PAD_LEFT)).' ';
+	echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream, 16, 8))), 2, '0', STR_PAD_LEFT)).' ';
+	echo strtoupper(str_pad(dechex(bindec(substr($headerbitstream, 24, 8))), 2, '0', STR_PAD_LEFT)).'<BR>';
 
 }
 
@@ -1577,7 +1583,7 @@ function MPEGaudioCRCLookup($CRCbit) {
 /////////////////////////////////////////////////////////////////
 /// getID3() by James Heinrich <info@getid3.org>               //
 //  available at http://getid3.sourceforge.net                ///
-//            or http://www.getid3.org                        ///
+//            or https://www.getid3.org                       ///
 /////////////////////////////////////////////////////////////////
 //                                                             //
 // getid3.mp3.php - part of getID3()                           //
@@ -2144,10 +2150,10 @@ function decodeMPEGaudioHeader($fd, $offset, &$ThisFileInfo, $recursivesearch=tr
 
 	//if (false) {
 	//	// experimental side info parsing section - not returning anything useful yet
-    //
+	//
 	//	$SideInfoBitstream = BigEndian2Bin($SideInfoData);
 	//	$SideInfoOffset = 0;
-    //
+	//
 	//	if ($ThisFileInfo['mpeg']['audio']['version'] == '1') {
 	//		if ($ThisFileInfo['mpeg']['audio']['channelmode'] == 'mono') {
 	//			// MPEG-1 (mono)
@@ -2173,7 +2179,7 @@ function decodeMPEGaudioHeader($fd, $offset, &$ThisFileInfo, $recursivesearch=tr
 	//			$SideInfoOffset += 2;
 	//		}
 	//	}
-    //
+	//
 	//	if ($ThisFileInfo['mpeg']['audio']['version'] == '1') {
 	//		for ($channel = 0; $channel < $ThisFileInfo['audio']['channels']; $channel++) {
 	//			for ($scfsi_band = 0; $scfsi_band < 4; $scfsi_band++) {
@@ -2199,39 +2205,39 @@ function decodeMPEGaudioHeader($fd, $offset, &$ThisFileInfo, $recursivesearch=tr
 	//			}
 	//			$ThisFileInfo['mpeg']['audio']['window_switching_flag'][$granule][$channel] = substr($SideInfoBitstream, $SideInfoOffset, 1);
 	//			$SideInfoOffset += 1;
-    //
+	//
 	//			if ($ThisFileInfo['mpeg']['audio']['window_switching_flag'][$granule][$channel] == '1') {
-    //
+	//
 	//				$ThisFileInfo['mpeg']['audio']['block_type'][$granule][$channel] = substr($SideInfoBitstream, $SideInfoOffset, 2);
 	//				$SideInfoOffset += 2;
 	//				$ThisFileInfo['mpeg']['audio']['mixed_block_flag'][$granule][$channel] = substr($SideInfoBitstream, $SideInfoOffset, 1);
 	//				$SideInfoOffset += 1;
-    //
+	//
 	//				for ($region = 0; $region < 2; $region++) {
 	//					$ThisFileInfo['mpeg']['audio']['table_select'][$granule][$channel][$region] = substr($SideInfoBitstream, $SideInfoOffset, 5);
 	//					$SideInfoOffset += 5;
 	//				}
 	//				$ThisFileInfo['mpeg']['audio']['table_select'][$granule][$channel][2] = 0;
-    //
+	//
 	//				for ($window = 0; $window < 3; $window++) {
 	//					$ThisFileInfo['mpeg']['audio']['subblock_gain'][$granule][$channel][$window] = substr($SideInfoBitstream, $SideInfoOffset, 3);
 	//					$SideInfoOffset += 3;
 	//				}
-    //
+	//
 	//			} else {
-    //
+	//
 	//				for ($region = 0; $region < 3; $region++) {
 	//					$ThisFileInfo['mpeg']['audio']['table_select'][$granule][$channel][$region] = substr($SideInfoBitstream, $SideInfoOffset, 5);
 	//					$SideInfoOffset += 5;
 	//				}
-    //
+	//
 	//				$ThisFileInfo['mpeg']['audio']['region0_count'][$granule][$channel] = substr($SideInfoBitstream, $SideInfoOffset, 4);
 	//				$SideInfoOffset += 4;
 	//				$ThisFileInfo['mpeg']['audio']['region1_count'][$granule][$channel] = substr($SideInfoBitstream, $SideInfoOffset, 3);
 	//				$SideInfoOffset += 3;
 	//				$ThisFileInfo['mpeg']['audio']['block_type'][$granule][$channel] = 0;
 	//			}
-    //
+	//
 	//			if ($ThisFileInfo['mpeg']['audio']['version'] == '1') {
 	//				$ThisFileInfo['mpeg']['audio']['preflag'][$granule][$channel] = substr($SideInfoBitstream, $SideInfoOffset, 1);
 	//				$SideInfoOffset += 1;
@@ -2383,7 +2389,7 @@ function getOnlyMPEGaudioInfo($fd, &$ThisFileInfo, $avdataoffset, $BitrateHistog
 
 	}
 
-	$header_len = strlen($header) - round(FREAD_BUFFER_SIZE / 2);
+	$header_len = strlen($header) - round(32768 / 2);
 	while (true) {
 
 		if (($SynchSeekOffset > $header_len) && (($avdataoffset + $SynchSeekOffset)  < $ThisFileInfo['avdataend']) && !feof($fd)) {
@@ -2402,10 +2408,10 @@ function getOnlyMPEGaudioInfo($fd, &$ThisFileInfo, $avdataoffset, $BitrateHistog
 				}
 				return false;
 
-			} elseif ($header .= fread($fd, FREAD_BUFFER_SIZE)) {
+			} elseif ($header .= fread($fd, 32768)) {
 
 				// great
-				$header_len = strlen($header) - round(FREAD_BUFFER_SIZE / 2);
+				$header_len = strlen($header) - round(32768 / 2);
 
 			} else {
 
@@ -2887,4 +2893,8 @@ function LAMEsurroundInfoLookup($SurroundInfoID) {
 	return (isset($LAMEsurroundInfoLookup[$SurroundInfoID]) ? $LAMEsurroundInfoLookup[$SurroundInfoID] : 'reserved');
 }
 
-?>
+for ($i = 0x00; $i <= 0xFF; $i++) {
+	$head4 = "\xFF\xFE".chr($i)."\x00";
+	$isvalid = MPEGaudioHeaderBytesValid($head4);
+	echo '<div style="color: '.($isvalid ? 'green' : 'red').';">'.str_pad(strtoupper(dechex($i)), 2, '0', STR_PAD_LEFT).' = '.htmlentities(chr($i)).' = '.($isvalid ? 'valid' : 'INVALID').'</div>';
+}

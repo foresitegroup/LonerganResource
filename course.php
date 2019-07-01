@@ -1,8 +1,8 @@
 <?php
 include("inc/dbconfig.php");
 require_once("inc/getid3/getid3/getid3.php");
-$result = mysql_query("SELECT * FROM courses WHERE id = '" . $_SERVER['QUERY_STRING'] . "'");
-$row = mysql_fetch_array($result);
+$result = $mysqli->query("SELECT * FROM courses WHERE id = '" . $_SERVER['QUERY_STRING'] . "'");
+$row = $result->fetch_array(MYSQLI_ASSOC);
 
 $PageTitle = $row['name'] . ", " . $row['date'] . ", " . $row['title'];
 include "header.php";
@@ -31,8 +31,8 @@ if (file_exists("pdf/courses/" . $_SERVER['QUERY_STRING'])) {
   $handler = opendir("pdf/courses/" . $_SERVER['QUERY_STRING']);
   
   while ($file = readdir($handler)) {
-    if (end(explode(".", $file)) == "pdf")
-      $results[] = $file;
+    $pext = explode(".", $file);
+    if (end($pext) == "pdf") $results[] = $file;
   }
   
   closedir($handler);
@@ -41,8 +41,16 @@ if (file_exists("pdf/courses/" . $_SERVER['QUERY_STRING'])) {
   
   foreach ($results as $value) {
     $document = file_get_contents("pdf/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value);
-    $pdfauthor = (preg_match_all("/\/Author\((.*?)\)/",$document,$match)) ? end(end($match)) : "";
-    $pdftitle = (preg_match_all("/\/Title\((.*?)\)/",$document,$match)) ? end(end($match)) : $value;
+
+    preg_match_all("/\/Author\((.*?)\)/",$document,$aarr);
+    $aarr_last = end($aarr);
+    $pdfauthor = end($aarr_last);
+
+    preg_match_all("/\/Title\((.*?)\)/",$document,$tarr);
+    $tarr_last = end($tarr);
+    $pdftitle = end($tarr_last);
+    if ($pdftitle == "") $pdftitle = $value;
+
     $pdf = ($pdfauthor != "" && $pdftitle != $value) ? $pdfauthor . ", <em>" . $pdftitle . "</em>" : "<em>" . $pdftitle . "</em>";
     
     echo "<br><a href=\"pdf/courses/" . $_SERVER['QUERY_STRING'] . "/" . $value . "\"><img src=\"images/pdf.gif\" alt=\"PDF\"> View " . $pdf . "</a>\n";
@@ -57,8 +65,8 @@ if (file_exists("audio/courses/" . $_SERVER['QUERY_STRING'])) {
   $handler = opendir("audio/courses/" . $_SERVER['QUERY_STRING']);
   
   while ($file = readdir($handler)) {
-    if (end(explode(".", $file)) == "mp3")
-      $results[] = $file;
+    $mext = explode(".", $file);
+    if (end($mext) == "mp3") $results[] = $file;
   }
   
   closedir($handler);

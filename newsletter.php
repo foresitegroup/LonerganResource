@@ -20,7 +20,7 @@ include "header.php";
 <?php
 if (isset($_POST['submit'])) {
   include "inc/dbconfig.php";
-  mysql_query("INSERT INTO newsletter (email) VALUES ('" . $_POST['email'] . "')");
+  $mysqli->query("INSERT INTO newsletter (email) VALUES ('" . $_POST['email'] . "')");
   
   echo "<h1>You are now subscribed</h1>\n\nThank you for your interest in Lonergan Resource.";
 } else {

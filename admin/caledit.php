@@ -49,8 +49,8 @@ include "../inc/dbconfig.php";
     <h1>Edit Calendar Event</h1>
     
     <?php
-    $result = mysql_query("SELECT * FROM calendar WHERE id = '" . $_GET['id'] . "'");
-    $row = mysql_fetch_array($result);
+    $result = $mysqli->query("SELECT * FROM calendar WHERE id = '" . $_GET['id'] . "'");
+    $row = $result->fetch_array(MYSQLI_ASSOC);
     ?>
     
     <form action="caldb.php?a=edit<?php if (!empty($_GET['b'])) { echo "&b=" . $_GET['b']; } ?>" method="POST" onSubmit="return checkform(this)">

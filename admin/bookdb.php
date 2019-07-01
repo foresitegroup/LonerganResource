@@ -13,7 +13,7 @@ switch ($_GET['a']) {
     break;
 }
 
-mysql_query($query) or die(mysql_error());
+$mysqli->query($query);
 
-header( "Location: bookindex.php" );
+header("Location: bookindex.php");
 ?>

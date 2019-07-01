@@ -52,8 +52,8 @@ include "../inc/dbconfig.php";
           <select name="conference" style="width: 315px;">
             <option value="">Select...</option>
             <?php
-            $cresult = mysql_query("SELECT * FROM conference ORDER BY startdate ASC");
-            while($crow = mysql_fetch_array($cresult)) {
+            $cresult = $mysqli->query("SELECT * FROM conference ORDER BY startdate ASC");
+            while($crow = $cresult->fetch_array(MYSQLI_ASSOC)) {
               $cdatestr = date("M d", $crow['startdate']);
               if (($crow['enddate'] == "") || ($crow['enddate'] == $crow['startdate'])) {
                 $cdatestr .= ", " . date("Y", $crow['startdate']);
@@ -124,15 +124,15 @@ include "../inc/dbconfig.php";
       <h1>Available Contributors</h1>
 
       <?php
-      $result = mysql_query("SELECT * FROM contributors ORDER BY name ASC");
-      while($row = mysql_fetch_array($result)) {
+      $result = $mysqli->query("SELECT id, name, title, display, from_unixtime(datetime, '%b %d, %Y') as datetime FROM contributors ORDER BY name ASC");
+      while($row = $result->fetch_array(MYSQLI_ASSOC)) {
         echo "
         <div style=\"margin-left: 60px;\">
           <div style=\"float: left; width: 60px; margin-left: -60px; font-size: 120%;\">
             <a href=\"contribedit.php?id=" . $row['id'] . "\" title=\"Edit\"><i class=\"fa fa-pencil\"></i></a> &nbsp; 
             <a href=\"contribdb.php?a=delete&id=" . $row['id'] . "\" onClick=\"return(confirm('Are you sure you want to delete this record?'));\" title=\"Delete\"><i class=\"fa fa-trash-o\"></i></a>
           </div>
-          " . $row['name'] . ", \"" . $row['title'] . "\" (" . date("M d, Y", $row['datetime']) . ")
+          " . $row['name'] . ", \"" . $row['title'] . "\" (" . $row['datetime'] . ")
           ";
 
           if (!empty($row['display'])) echo "<br><em>[Not displayed publically]</em>";
