@@ -22,10 +22,11 @@
       </div> <!-- END calendar -->
       
       <br><br>
-      <a href="pdf/2018_Letter_from_Robert_M._Doran.pdf" style="font-weight: bold; font-size: 170%;">2018 Letter from Robert M. Doran</a> <img src="images/pdf.gif" alt="PDF"><br>
+      <a href="pdf/2019_Letter_from_Robert_M._Doran.pdf" style="font-weight: bold; font-size: 170%;">2019 Letter from Robert M. Doran</a> <img src="images/pdf.gif" alt="PDF"><br>
       <br>
 
-      <a href="pdf/International_Institute_for_Method_in_Theology_Newsletter_1.pdf" style="font-weight: bold; font-size: 150%;">International Institute for Method in Theology, Newsletter 1</a> <img src="images/pdf.gif" alt="PDF">
+      <a href="pdf/International_Institute_for_Method_in_Theology_Newsletter_1.pdf" style="font-weight: bold; font-size: 150%;">International Institute for Method in Theology, Newsletter 1</a> <img src="images/pdf.gif" alt="PDF"><br>
+      <a href="pdf/International_Institute_for_Method_in_Theology_Newsletter_2.pdf" style="font-weight: bold; font-size: 150%;">International Institute for Method in Theology, Newsletter 2</a> <img src="images/pdf.gif" alt="PDF">
     </div> <!-- END sidebar -->
     
     <div style="clear: both;"></div>
