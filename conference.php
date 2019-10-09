@@ -55,7 +55,7 @@ if ($result->num_rows > 0) {
 
             $length = gmdate("G:i:s", @$ThisFileInfo['playtime_seconds']);
 
-            $playlist .= "{ title: \"" . htmlspecialchars($title) . "\", mp3: \"audio/contributors/" . $row['file' . $i] . "\", artist: \"" . $length . "\", free: true },\n";
+            $playlist .= "{ title: \"" . htmlspecialchars($title, ENT_QUOTES) . "\", mp3: \"audio/contributors/" . $row['file' . $i] . "\", artist: \"" . $length . "\", free: true },\n";
 
             $tracks++;
 
