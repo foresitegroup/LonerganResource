@@ -60,7 +60,7 @@ switch ($_GET['a']) {
     break;
 }
 
-$mysqli->query($query));
+$mysqli->query($query);
 
 $TheID = ($_GET['a'] == "add") ? $mysqli->insert_id : $_REQUEST['id'];
 
@@ -94,5 +94,5 @@ if ($_GET['a'] != "delete") {
   }
 }
 
-header( "Location: contribindex.php" );
+header("Location: contribindex.php");
 ?>

@@ -41,7 +41,7 @@ switch ($_GET['a']) {
     break;
 }
 
-$mysqli->query($query));
+$mysqli->query($query);
 
 header("Location: conindex.php");
 ?>
